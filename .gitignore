@@ -53,7 +53,6 @@ day09/lab/chroma_db/
 day10/lab/chroma_db/
 *.sqlite
 *.db
-results/
 reports/individual/*.md
 !reports/individual/template.md
 

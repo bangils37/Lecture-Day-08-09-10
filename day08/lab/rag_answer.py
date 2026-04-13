@@ -136,8 +136,8 @@ def retrieve_sparse(query: str, top_k: int = TOP_K_SEARCH) -> List[Dict[str, Any
 def retrieve_hybrid(
     query: str,
     top_k: int = TOP_K_SEARCH,
-    dense_weight: float = 0.5, # Cân bằng 2 bên
-    sparse_weight: float = 0.5,
+    dense_weight: float = 0.7, # Ưu tiên dense hơn vì nó ổn định cho ngữ nghĩa
+    sparse_weight: float = 0.3,
 ) -> List[Dict[str, Any]]:
     """
     Hybrid retrieval: kết hợp dense và sparse bằng Reciprocal Rank Fusion (RRF).

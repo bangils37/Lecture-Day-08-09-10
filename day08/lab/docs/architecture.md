@@ -117,16 +117,17 @@ Answer:
 > TODO: Vẽ sơ đồ pipeline nếu có thời gian. Có thể dùng Mermaid hoặc drawio.
 
 ```mermaid
-graph LR
-    A[User Query] --> B[Query Embedding]
-    B --> C[ChromaDB Vector Search]
-    C --> D[Top-10 Candidates]
-    D --> E{Rerank?}
-    E -->|Yes| F[Cross-Encoder]
-    E -->|No| G[Top-3 Select]
-    F --> G
-    G --> H[Build Context Block]
-    H --> I[Grounded Prompt]
-    I --> J[LLM]
-    J --> K[Answer + Citation]
+graph TD
+    A[User Query] --> B[Dense: Query Embedding]
+    A --> C[Sparse: BM25 Tokenization]
+    B --> D[Qdrant Vector Search]
+    C --> E[BM25 Scoring]
+    D --> F[Hybrid Fusion: RRF]
+    E --> F
+    F --> G[Top-10 Fusion Results]
+    G --> H[Top-3 Selection]
+    H --> I[Build context_block]
+    I --> J[Grounded Prompt Template]
+    J --> K[Gemini 1.5 Flash]
+    K --> L[Grounded Answer + Citation]
 ```
