@@ -86,29 +86,47 @@ def retrieve_dense(query: str, top_k: int = TOP_K_SEARCH) -> List[Dict[str, Any]
 def retrieve_sparse(query: str, top_k: int = TOP_K_SEARCH) -> List[Dict[str, Any]]:
     """
     Sparse retrieval: tìm kiếm theo keyword (BM25).
-
-    Mạnh ở: exact term, mã lỗi, tên riêng (ví dụ: "ERR-403", "P1", "refund")
-    Hay hụt: câu hỏi paraphrase, đồng nghĩa
-
-    TODO Sprint 3 (nếu chọn hybrid):
-    1. Cài rank_bm25: pip install rank-bm25
-    2. Load tất cả chunks từ ChromaDB (hoặc rebuild từ docs)
-    3. Tokenize và tạo BM25Index
-    4. Query và trả về top_k kết quả
-
-    Gợi ý:
-        from rank_bm25 import BM25Okapi
-        corpus = [chunk["text"] for chunk in all_chunks]
-        tokenized_corpus = [doc.lower().split() for doc in corpus]
-        bm25 = BM25Okapi(tokenized_corpus)
-        tokenized_query = query.lower().split()
-        scores = bm25.get_scores(tokenized_query)
-        top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_k]
     """
-    # TODO Sprint 3: Implement BM25 search
-    # Tạm thời return empty list
-    print("[retrieve_sparse] Chưa implement — Sprint 3")
-    return []
+    from rank_bm25 import BM25Okapi
+    
+    # Pre-fetch all chunks to build BM25 index
+    # (Trong thực tế nên cache index này hoặc dùng BM25 của Qdrant/Elastic)
+    if not hasattr(retrieve_sparse, "bm25") or not hasattr(retrieve_sparse, "all_payloads"):
+        if QDRANT_URL:
+            client = qdrant_client.QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+        else:
+            client = qdrant_client.QdrantClient(":memory:")
+            
+        points = client.scroll(
+            collection_name=COLLECTION_NAME,
+            limit=1000,
+            with_payload=True,
+            with_vectors=False
+        )[0]
+        
+        retrieve_sparse.all_payloads = [p.payload for p in points]
+        corpus = [p.payload.get("text", "").lower().split() for p in points]
+        retrieve_sparse.bm25 = BM25Okapi(corpus)
+    
+    tokenized_query = query.lower().split()
+    scores = retrieve_sparse.bm25.get_scores(tokenized_query)
+    
+    # Get top k indices
+    import numpy as np
+    top_n = min(len(scores), top_k)
+    top_indices = np.argsort(scores)[::-1][:top_n]
+    
+    chunks = []
+    for idx in top_indices:
+        if scores[idx] > 0:  # Only include if there is a match
+            payload = retrieve_sparse.all_payloads[idx]
+            chunks.append({
+                "text": payload.get("text", ""),
+                "metadata": {k: v for k, v in payload.items() if k != "text"},
+                "score": float(scores[idx])
+            })
+    
+    return chunks
 
 
 # =============================================================================
@@ -118,36 +136,40 @@ def retrieve_sparse(query: str, top_k: int = TOP_K_SEARCH) -> List[Dict[str, Any
 def retrieve_hybrid(
     query: str,
     top_k: int = TOP_K_SEARCH,
-    dense_weight: float = 0.6,
-    sparse_weight: float = 0.4,
+    dense_weight: float = 0.5, # Cân bằng 2 bên
+    sparse_weight: float = 0.5,
 ) -> List[Dict[str, Any]]:
     """
     Hybrid retrieval: kết hợp dense và sparse bằng Reciprocal Rank Fusion (RRF).
-
-    Mạnh ở: giữ được cả nghĩa (dense) lẫn keyword chính xác (sparse)
-    Phù hợp khi: corpus lẫn lộn ngôn ngữ tự nhiên và tên riêng/mã lỗi/điều khoản
-
-    Args:
-        dense_weight: Trọng số cho dense score (0-1)
-        sparse_weight: Trọng số cho sparse score (0-1)
-
-    TODO Sprint 3 (nếu chọn hybrid):
-    1. Chạy retrieve_dense() → dense_results
-    2. Chạy retrieve_sparse() → sparse_results
-    3. Merge bằng RRF:
-       RRF_score(doc) = dense_weight * (1 / (60 + dense_rank)) +
-                        sparse_weight * (1 / (60 + sparse_rank))
-       60 là hằng số RRF tiêu chuẩn
-    4. Sort theo RRF score giảm dần, trả về top_k
-
-    Khi nào dùng hybrid (từ slide):
-    - Corpus có cả câu tự nhiên VÀ tên riêng, mã lỗi, điều khoản
-    - Query như "Approval Matrix" khi doc đổi tên thành "Access Control SOP"
     """
-    # TODO Sprint 3: Implement hybrid RRF
-    # Tạm thời fallback về dense
-    print("[retrieve_hybrid] Chưa implement RRF — fallback về dense")
-    return retrieve_dense(query, top_k)
+    dense_results = retrieve_dense(query, top_k=top_k * 2) # Lấy rộng hơn để merge
+    sparse_results = retrieve_sparse(query, top_k=top_k * 2)
+    
+    # RRF logic: score = sum(weight / (60 + rank))
+    rrf_scores = {} # (text, source) -> score
+    doc_map = {}    # (text, source) -> full_doc
+    
+    for rank, doc in enumerate(dense_results, 1):
+        key = (doc["text"], doc["metadata"].get("source", ""))
+        rrf_scores[key] = rrf_scores.get(key, 0) + dense_weight * (1.0 / (60.0 + rank))
+        doc_map[key] = doc
+        
+    for rank, doc in enumerate(sparse_results, 1):
+        key = (doc["text"], doc["metadata"].get("source", ""))
+        rrf_scores[key] = rrf_scores.get(key, 0) + sparse_weight * (1.0 / (60.0 + rank))
+        if key not in doc_map:
+            doc_map[key] = doc
+            
+    # Sort by RRF score
+    sorted_keys = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
+    
+    final_results = []
+    for key, score in sorted_keys[:top_k]:
+        doc = doc_map[key]
+        doc["score"] = score # Replace original score with RRF score
+        final_results.append(doc)
+        
+    return final_results
 
 
 # =============================================================================
@@ -424,18 +446,19 @@ def compare_retrieval_strategies(query: str) -> None:
     print(f"Query: {query}")
     print('='*60)
 
-    strategies = ["dense", "hybrid"]  # Thêm "sparse" sau khi implement
+    strategies = ["dense", "sparse", "hybrid"]
 
     for strategy in strategies:
         print(f"\n--- Strategy: {strategy} ---")
         try:
             result = rag_answer(query, retrieval_mode=strategy, verbose=False)
             print(f"Answer: {result['answer']}")
-            print(f"Sources: {result['sources']}")
-        except NotImplementedError as e:
-            print(f"Chưa implement: {e}")
+            used_chunks = [f"{c['metadata'].get('source')} (score={c.get('score', 0):.4f})" for c in result['chunks_used']]
+            print(f"Top Chunks: {used_chunks}")
         except Exception as e:
             print(f"Lỗi: {e}")
+            import traceback
+            traceback.print_exc()
 
 
 # =============================================================================
@@ -467,10 +490,9 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Lỗi: {e}")
 
-    # Uncomment sau khi Sprint 3 hoàn thành:
-    # print("\n--- Sprint 3: So sánh strategies ---")
-    # compare_retrieval_strategies("Approval Matrix để cấp quyền là tài liệu nào?")
-    # compare_retrieval_strategies("ERR-403-AUTH")
+    print("\n--- Sprint 3: So sánh strategies ---")
+    compare_retrieval_strategies("Chương trình hoàn tiền cho khách hàng?")
+    compare_retrieval_strategies("ERR-403-AUTH")
 
     print("\n\nViệc cần làm Sprint 2:")
     print("  1. Implement retrieve_dense() — query ChromaDB")
