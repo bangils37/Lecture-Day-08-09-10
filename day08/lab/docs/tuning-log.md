@@ -7,16 +7,16 @@
 
 ## Baseline (Sprint 2)
 
-**Ngày:** ___________  
+**Ngày:** 2026-04-13  
 **Config:**
 ```
 retrieval_mode = "dense"
-chunk_size = _____ tokens
-overlap = _____ tokens
+chunk_size = 500 characters (paragraph based)
+overlap = 100 characters
 top_k_search = 10
 top_k_select = 3
 use_rerank = False
-llm_model = _____
+llm_model = gemini-1.5-flash
 ```
 
 **Scorecard Baseline:**
@@ -43,17 +43,19 @@ llm_model = _____
 
 ## Variant 1 (Sprint 3)
 
-**Ngày:** ___________  
-**Biến thay đổi:** ___________  
+**Ngày:** 2026-04-13  
+**Biến thay đổi:** Hybrid Retrieval (Dense + BM25) với RRF  
 **Lý do chọn biến này:**
-> TODO: Giải thích theo evidence từ baseline results.
-> Ví dụ: "Chọn hybrid vì q07 (alias query) và q09 (mã lỗi ERR-403) đều thất bại với dense.
-> Corpus có cả ngôn ngữ tự nhiên (policy) lẫn tên riêng/mã lỗi (ticket code, SLA label)."
+- Dense retrieval có thể bỏ lỡ các từ khóa chính xác (mã lỗi như ERR-403) nếu embedding không nhạy bén với các chuỗi ký tự đặc biệt.
+- Hybrid giúp kết hợp thế mạnh của semantic search (ý nghĩa) và keyword search (từ khóa chính xác).
+- RRF (Reciprocal Rank Fusion) cung cấp cách kết hợp kết quả từ 2 phương pháp mà không cần chuẩn hóa scale điểm số khác nhau.
 
 **Config thay đổi:**
 ```
-retrieval_mode = "hybrid"   # hoặc biến khác
-# Các tham số còn lại giữ nguyên như baseline
+retrieval_mode = "hybrid"
+top_k_search = 10
+top_k_select = 3
+# Thêm BM25 index pre-computed
 ```
 
 **Scorecard Variant 1:**
