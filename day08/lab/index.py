@@ -34,6 +34,11 @@ DOCS_DIR = Path(__file__).parent / "data" / "docs"
 QDRANT_DB_DIR = Path(__file__).parent / "qdrant_db"
 QDRANT_COLLECTION_NAME = "rag_lab"
 
+# Qdrant Cloud config (từ .env)
+QDRANT_CLUSTER_ENDPOINT = os.getenv("QDRANT_CLUSTER_ENDPOINT", "")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")
+USE_QDRANT_CLOUD = bool(QDRANT_CLUSTER_ENDPOINT)  # True if cloud endpoint is set
+
 # Embedding model config
 EMBEDDING_MODEL = "Qwen/Qwen3-Embedding-0.6B"
 EMBEDDING_DIM = 1024  # Qwen3-0.6B output dimension
@@ -290,7 +295,7 @@ def build_index(docs_dir: Path = DOCS_DIR, db_dir: Path = QDRANT_DB_DIR) -> None
     Pipeline hoàn chỉnh: đọc docs → preprocess → chunk → embed → upsert Qdrant.
 
     Steps:
-    1. Khởi tạo Qdrant client (Local mode)
+    1. Khởi tạo Qdrant client (Cloud hoặc Local mode)
     2. Tạo/recreate collection với vector params (dim=512 cho Qwen)
     3. Load embedding model (Qwen3-0.6B)
     4. Với mỗi file:
@@ -300,10 +305,19 @@ def build_index(docs_dir: Path = DOCS_DIR, db_dir: Path = QDRANT_DB_DIR) -> None
        d. Upsert vào Qdrant với metadata
     """
     print(f"Đang build index từ: {docs_dir}")
-    db_dir.mkdir(parents=True, exist_ok=True)
     
-    # Bước 1: Khởi tạo Qdrant client (Local mode - persistent storage)
-    client = QdrantClient(path=str(db_dir))
+    # Bước 1: Khởi tạo Qdrant client (Cloud hoặc Local mode)
+    if USE_QDRANT_CLOUD:
+        print(f"🌐 Connecting to Qdrant Cloud: {QDRANT_CLUSTER_ENDPOINT}")
+        client = QdrantClient(
+            url=QDRANT_CLUSTER_ENDPOINT,
+            api_key=QDRANT_API_KEY,
+        )
+        print("✅ Connected to Qdrant Cloud")
+    else:
+        print(f"💾 Using local Qdrant: {db_dir}")
+        db_dir.mkdir(parents=True, exist_ok=True)
+        client = QdrantClient(path=str(db_dir))
     
     # Bước 2: Xóa collection cũ (nếu có) để reset
     try:
@@ -419,14 +433,21 @@ def list_chunks(db_dir: Path = QDRANT_DB_DIR, n: int = 5) -> None:
     - Metadata có đúng không?
     """
     try:
-        client = QdrantClient(path=str(db_dir))
+        # Connect to Qdrant (Cloud hoặc Local)
+        if USE_QDRANT_CLOUD:
+            client = QdrantClient(
+                url=QDRANT_CLUSTER_ENDPOINT,
+                api_key=QDRANT_API_KEY,
+            )
+        else:
+            client = QdrantClient(path=str(db_dir))
         
         # Lấy thông tin collection
         try:
             collection_info = client.get_collection(QDRANT_COLLECTION_NAME)
             total_points = collection_info.points_count
         except:
-            print(f"❌ Collection '{QDRANT_COLLECTION_NAME}' not found in {db_dir}")
+            print(f"❌ Collection '{QDRANT_COLLECTION_NAME}' not found")
             print("💡 Run build_index() first")
             return
         
@@ -474,7 +495,14 @@ def inspect_metadata_coverage(db_dir: Path = QDRANT_DB_DIR) -> None:
     - Chunk nào thiếu effective_date?
     """
     try:
-        client = QdrantClient(path=str(db_dir))
+        # Connect to Qdrant (Cloud hoặc Local)
+        if USE_QDRANT_CLOUD:
+            client = QdrantClient(
+                url=QDRANT_CLUSTER_ENDPOINT,
+                api_key=QDRANT_API_KEY,
+            )
+        else:
+            client = QdrantClient(path=str(db_dir))
         
         # Lấy thông tin collection
         try:
@@ -578,9 +606,13 @@ if __name__ == "__main__":
     print("\n" + "="*80)
     print("🚀 SPRINT 1: BUILD RAG INDEX")
     print("="*80)
+    if USE_QDRANT_CLOUD:
+        print(f"🌐 Mode: Qdrant Cloud")
+        print(f"   Endpoint: {QDRANT_CLUSTER_ENDPOINT}")
+    else:
+        print(f"💾 Mode: Local Qdrant")
+        print(f"   Storage: {QDRANT_DB_DIR}")
     print(f"Tech Stack: Qwen Embedding + Qdrant")
-    print(f"Docs dir:   {DOCS_DIR}")
-    print(f"Storage:    {QDRANT_DB_DIR}")
     print("="*80)
 
     # Bước 1: Kiểm tra docs
