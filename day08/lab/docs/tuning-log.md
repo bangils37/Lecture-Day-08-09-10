@@ -22,10 +22,10 @@ llm_model = gemini-1.5-flash
 **Scorecard Baseline:**
 | Metric | Average Score |
 |--------|--------------|
-| Faithfulness | ? /5 |
-| Answer Relevance | ? /5 |
-| Context Recall | ? /5 |
-| Completeness | ? /5 |
+| Faithfulness | 4.70 /5 |
+| Answer Relevance | 3.40 /5 |
+| Context Recall | 5.00 /5 |
+| Completeness | 3.70 /5 |
 
 **Câu hỏi yếu nhất (điểm thấp):**
 > TODO: Liệt kê 2-3 câu hỏi có điểm thấp nhất và lý do tại sao.
@@ -61,18 +61,19 @@ top_k_select = 3
 **Scorecard Variant 1:**
 | Metric | Baseline | Variant 1 | Delta |
 |--------|----------|-----------|-------|
-| Faithfulness | ?/5 | ?/5 | +/- |
-| Answer Relevance | ?/5 | ?/5 | +/- |
-| Context Recall | ?/5 | ?/5 | +/- |
-| Completeness | ?/5 | ?/5 | +/- |
+| Faithfulness | 4.70/5 | 5.00/5 | +0.30 |
+| Answer Relevance | 3.40/5 | 3.30/5 | -0.10 |
+| Context Recall | 5.00/5 | 5.00/5 | 0.00 |
+| Completeness | 3.70/5 | 3.80/5 | +0.10 |
 
 **Nhận xét:**
-> TODO: Variant 1 cải thiện ở câu nào? Tại sao?
-> Có câu nào kém hơn không? Tại sao?
+- Variant 1 (Hybrid) cải thiện Faithfulness lên 5.0, giúp model bám sát context tốt hơn.
+- Context Recall đạt mức tối đa ở cả 2 bản, cho thấy tập dữ liệu nhỏ giúp việc tìm kiếm khá dễ dàng.
+- Tuy nhiên, Answer Relevance giảm nhẹ, có thể do việc đưa thêm các chunk từ BM25 làm loãng context cho LLM ở một số câu hỏi tự nhiên.
 
 **Kết luận:**
-> TODO: Variant 1 có tốt hơn baseline không?
-> Bằng chứng là gì? (điểm số, câu hỏi cụ thể)
+- Hybrid Retrieval tốt hơn trong việc đảm bảo tính trung thực (Faithfulness) do BM25 giúp confirm các keyword quan trọng.
+- Cho tập dữ liệu này, Hybrid là một lựa chọn an toàn để cân bằng giữa semantic và keyword search.
 
 ---
 
