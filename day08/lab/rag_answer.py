@@ -22,6 +22,7 @@ Definition of Done Sprint 3:
 """
 
 import os
+import qdrant_client
 from typing import List, Dict, Any, Optional, Tuple
 from dotenv import load_dotenv
 
@@ -34,7 +35,12 @@ load_dotenv()
 TOP_K_SEARCH = 10    # Số chunk lấy từ vector store trước rerank (search rộng)
 TOP_K_SELECT = 3     # Số chunk gửi vào prompt sau rerank/select (top-3 sweet spot)
 
-LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
+LLM_MODEL = os.getenv("LLM_MODEL", "gemini-1.5-flash") # Dùng Gemini 1.5 Flash cho speed/cost
+
+# Qdrant configuration from .env
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
+QDRANT_URL = os.getenv("QDRANT_CLUSTER_ENDPOINT")
+COLLECTION_NAME = "rag_lab"
 
 
 # =============================================================================
@@ -43,43 +49,33 @@ LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
 
 def retrieve_dense(query: str, top_k: int = TOP_K_SEARCH) -> List[Dict[str, Any]]:
     """
-    Dense retrieval: tìm kiếm theo embedding similarity trong ChromaDB.
-
-    Args:
-        query: Câu hỏi của người dùng
-        top_k: Số chunk tối đa trả về
-
-    Returns:
-        List các dict, mỗi dict là một chunk với:
-          - "text": nội dung chunk
-          - "metadata": metadata (source, section, effective_date, ...)
-          - "score": cosine similarity score
-
-    TODO Sprint 2:
-    1. Embed query bằng cùng model đã dùng khi index (xem index.py)
-    2. Query ChromaDB với embedding đó
-    3. Trả về kết quả kèm score
-
-    Gợi ý:
-        import chromadb
-        from index import get_embedding, CHROMA_DB_DIR
-
-        client = chromadb.PersistentClient(path=str(CHROMA_DB_DIR))
-        collection = client.get_collection("rag_lab")
-
-        query_embedding = get_embedding(query)
-        results = collection.query(
-            query_embeddings=[query_embedding],
-            n_results=top_k,
-            include=["documents", "metadatas", "distances"]
-        )
-        # Lưu ý: distances trong ChromaDB cosine = 1 - similarity
-        # Score = 1 - distance
+    Dense retrieval: tìm kiếm theo embedding similarity trong Qdrant.
     """
-    raise NotImplementedError(
-        "TODO Sprint 2: Implement retrieve_dense().\n"
-        "Tham khảo comment trong hàm để biết cách query ChromaDB."
-    )
+    from index import get_embedding
+    
+    if QDRANT_URL:
+        client = qdrant_client.QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+    else:
+        client = qdrant_client.QdrantClient(":memory:")
+
+    query_embedding = get_embedding(query)
+    
+    results = client.query_points(
+        collection_name=COLLECTION_NAME,
+        query=query_embedding,
+        limit=top_k,
+        with_payload=True,
+    ).points
+
+    chunks = []
+    for hit in results:
+        chunks.append({
+            "text": hit.payload.get("text", ""),
+            "metadata": {k: v for k, v in hit.payload.items() if k != "text"},
+            "score": hit.score
+        })
+    
+    return chunks
 
 
 # =============================================================================
@@ -291,35 +287,26 @@ Answer:"""
 
 def call_llm(prompt: str) -> str:
     """
-    Gọi LLM để sinh câu trả lời.
-
-    TODO Sprint 2:
-    Chọn một trong hai:
-
-    Option A — OpenAI (cần OPENAI_API_KEY):
-        from openai import OpenAI
-        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        response = client.chat.completions.create(
-            model=LLM_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0,     # temperature=0 để output ổn định, dễ đánh giá
-            max_tokens=512,
-        )
-        return response.choices[0].message.content
-
-    Option B — Google Gemini (cần GOOGLE_API_KEY):
-        import google.generativeai as genai
-        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        response = model.generate_content(prompt)
-        return response.text
-
-    Lưu ý: Dùng temperature=0 hoặc thấp để output ổn định cho evaluation.
+    Gọi LLM để sinh câu trả lời dùng Google Gemini.
     """
-    raise NotImplementedError(
-        "TODO Sprint 2: Implement call_llm().\n"
-        "Chọn Option A (OpenAI) hoặc Option B (Gemini) trong TODO comment."
+    import google.generativeai as genai
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        raise ValueError("GOOGLE_API_KEY không được tìm thấy trong môi trường.")
+        
+    genai.configure(api_key=api_key)
+    # Dùng model version ổn định
+    model_name = os.getenv("LLM_MODEL", "gemini-1.5-flash")
+    model = genai.GenerativeModel(model_name)
+    
+    # Set temperature=0 for stability in evaluation
+    generation_config = genai.types.GenerationConfig(
+        temperature=0,
+        max_output_tokens=512,
     )
+    
+    response = model.generate_content(prompt, generation_config=generation_config)
+    return response.text
 
 
 def rag_answer(
