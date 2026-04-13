@@ -1,37 +1,75 @@
 # Group Report — Lab Day 08: RAG Pipeline
 
-**Nhóm:** Bangils (Documentation Owner: Bangils)
-**Chủ đề:** Xây dựng hệ thống RAG nội bộ cho CS & IT Helpdesk
+**Nhóm:** Bangils Team  
+**Thành viên:** 
+- **Bùi Trọng Anh**: Tech Lead & Documentation Owner (Sprints 1, 2, 4)
+- **Nguyễn Bằng Anh**: Retrieval Owner (Sprints 1, 3)
+- **Đỗ Thị Thùy Trang**: Eval Owner (Sprints 3, 4)
 
-## 1. Thành phần hệ thống
+---
 
-Hệ thống RAG của chúng tôi được xây dựng với các thành phần hiện đại nhằm tối ưu hóa độ chính xác và khả năng mở rộng:
+## 1. Tổng quan hệ thống (System Overview)
 
-- **Vector Database:** **Qdrant** (Cloud/Local) — Được chọn thay vì ChromaDB vì khả năng quản lý collection mạnh mẽ và hỗ trợ Hybrid search hiệu quả.
-- **Embedding Model:** **Qwen/Qwen3-Embedding-0.6B** — Một model local nhẹ nhưng hiệu quả cao cho cả tiếng Anh và tiếng Việt.
-- **Retrieval Strategy:** **Hybrid Retrieval** kết hợp **Dense Search** và **BM25** thông qua thuật toán **Reciprocal Rank Fusion (RRF)**.
-- **LLM:** **Gemini 1.5 Flash** — Cung cấp tốc độ phản hồi nhanh và khả năng hiểu ngữ cảnh tốt với chi phí tối ưu.
+Dự án này xây dựng một hệ thống RAG (Retrieval-Augmented Generation) nhằm giải quyết nhu cầu tra cứu thông tin chính sách nội bộ một cách nhanh chóng và chính xác cho nhân viên CS (Customer Support) và IT Helpdesk. Hệ thống tập trung vào tính **Grounding** (trung thực) qua việc ép model trích dẫn nguồn cụ thể và tính **Recall** (độ bao phủ) qua chiến lược Hybrid Retrieval.
 
-## 2. Các quyết định kỹ thuật quan trọng
+### Sơ đồ Pipeline
+Hệ thống được thiết kế theo mô hình Funnel với khả năng mở rộng tốt:
 
-### Chunking Strategy
-Chúng tôi áp dụng **Paragraph-based chunking** với ranh giới là các dấu xuống dòng `\n\n`. Cách tiếp cận này giúp giữ toàn vẹn thông tin trong một điều khoản hoặc một FAQ, tránh tình trạng thông tin bị cắt đôi làm mất ý nghĩa. Chúng tôi sử dụng `overlap` khoảng 100 ký tự để đảm bảo tính liên kết giữa các chunk.
+```mermaid
+graph TD
+    A[User Query] --> B[Dense: Query Embedding]
+    A --> C[Sparse: BM25 Tokenization]
+    B --> D[Qdrant Vector Search]
+    C --> E[BM25 Scoring]
+    D --> F[Hybrid Fusion: RRF]
+    E --> F
+    F --> G[Top-10 Fusion Results]
+    G --> H[Top-3 Selection]
+    H --> I[Build context_block]
+    I --> J[Grounded Prompt Template]
+    J --> K[Gemini 1.5 Flash]
+    K --> L[Grounded Answer + Citation]
+```
 
-### Hybrid Retrieval (RRF)
-Qua quá trình test baseline (Dense-only), chúng tôi nhận thấy một số câu hỏi chứa từ khóa kỹ thuật (như "P1", "ERR-403") dễ bị trôi đi nếu chỉ tìm kiếm theo ngữ nghĩa. Việc kết hợp BM25 giúp các "hard keywords" được ưu tiên, từ đó nâng cao tính trung thực (Faithfulness) và giảm thiểu tình trạng model phải tự bịa câu trả lời.
+---
 
-### Evaluation (LLM-as-Judge)
-Thay vì chấm điểm thủ công, nhóm đã triển khai hệ thống chấm điểm tự động trong `eval.py` sử dụng Gemini để đánh giá:
-- **Faithfulness**: Liệu câu trả lời có dựa trên context không?
-- **Answer Relevance**: Câu trả lời có đúng trọng tâm không?
-- **Completeness**: Có bỏ lỡ chi tiết quan trọng nào không?
+## 2. Các quyết định kỹ thuật chủ chốt
 
-## 3. Kết quả đánh giá
+### Chiến lược Chunking (Sprint 1)
+Nhóm lựa chọn **Paragraph-based chunking** (`\n\n`) thay vì `token-based`. 
+- **Lý do:** Các tài liệu quy trình (SOP) và FAQ có cấu trúc logic theo đoạn. Việc tách bừa bãi theo số lượng từ sẽ làm mất đi tính liên kết giữa câu hỏi và câu trả lời hoặc giữa các bước trong một điều khoản.
+- **Tham số:** Size ~500 chars, Overlap 100 chars để duy trì mạch thông tin giữa các đoạn văn dài.
 
-Hệ thống Hybrid đạt điểm trung bình cao hơn Baseline trên hầu hết các metric, đặc biệt là **Faithfulness (5.0/5.0)**. Khả năng **Recall** cũng đạt mức tối đa cho tập dữ liệu mẫu, xác nhận rằng retriever đã mang về đầy đủ bằng chứng cần thiết cho LLM.
+### Retrieval Strategy: Baseline vs Variant (Sprint 2 & 3)
+- **Baseline (Dense):** Sử dụng `Qwen/Qwen3-Embedding-0.6B` để tìm kiếm sự tương đồng về ngữ nghĩa.
+- **Variant (Hybrid):** Kết hợp kết quả từ Dense Retrieval và Sparse Retrieval (BM25) qua thuật toán **Reciprocal Rank Fusion (RRF)**.
+- **Lý do nòng cốt:** Dense search thường bỏ sót các mã lỗi cụ thể hoặc mã Ticket (như ERR-403, P1). BM25 giúp đảm bảo các từ khóa quan trọng này không bị trôi đi, từ đó giúp LLM nhận được đúng chứng cứ cần thiết.
 
-## 4. Phân vai thành viên (Nếu có)
-- **Tech Lead:** [Tên] — Framework, End-to-end integration.
-- **Retrieval Owner:** [Tên] — Qdrant setup, Hybrid logic, Chunking.
-- **Eval Owner:** [Tên] — Scorecard implementation, LLM-as-Judge.
-- **Documentation Owner:** **Bangils** — Architecture docs, Tuning log, Group report.
+---
+
+## 3. Kết quả đánh giá & So sánh (Sprint 4)
+
+Chúng tôi đã chạy đánh giá trên 10 câu hỏi thử nghiệm với framework **LLM-as-Judge**. Kết quả so sánh giữa hai cấu hình:
+
+| Metric | Baseline (Dense) | Variant (Hybrid) | Delta | Nhận xét |
+|--------|------------------|------------------|-------|----------|
+| **Faithfulness** | 4.70 | **5.00** | +0.30 | Hybrid giúp trích xuất chính xác context chứa từ khóa kỹ thuật, giảm ảo giác. |
+| **Answer Relevance** | **3.40** | 3.30 | -0.10 | Việc gộp nhiều nguồn đôi khi làm loãng sự tập trung của model. |
+| **Context Recall** | 5.00 | 5.00 | 0.00 | Cả hai đều bao phủ tốt các file tài liệu mục tiêu. |
+| **Completeness** | 3.70 | **3.80** | +0.10 | Hybrid lấy được các đoạn văn chi tiết hơn nhờ khớp từ khóa. |
+
+---
+
+## 4. Kết luận & Quyết định chọn Variant
+
+Dựa trên số liệu scorecard, nhóm quyết định chọn **Variant Hybrid (RRF)** làm giải pháp cuối cùng cho việc nộp bài grading. 
+
+**Lý do chọn lựa:**
+1. **Tính tin cậy cao nhất:** Điểm Faithfulness tuyệt đối (5.0) đảm bảo hệ thống không trả lời sai lệch các quy định nhạy cảm của công ty.
+2. **Xử lý Alias/Keywords tốt:** Khả năng nhận diện tài liệu qua các từ khóa cũ (như phân tích ở câu q07) mang lại trải nghiệm người dùng tốt hơn khi họ không nhớ chính xác tiêu đề tài liệu hiện hành.
+3. **Mở rộng dễ dàng:** Cấu trúc Hybrid cho phép chúng tôi dễ dàng tích hợp thêm các nguồn dữ liệu mới mà không cần quá lo lắng về việc fine-tune lại model embedding.
+
+---
+
+## 5. Metadata & Trích dẫn
+Tất cả các chunk đều được gắn ít nhất 4 trường metadata: `source`, `section`, `department`, và `effective_date`. Điều này cho phép hệ thống tạo ra các trích dẫn có dạng: `[1] support/sla-p1-2026.pdf | Phần 2: Quy định ưu tiên`, giúp người dùng dễ dàng đối chiếu thông tin gốc.
