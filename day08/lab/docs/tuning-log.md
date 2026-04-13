@@ -2,7 +2,7 @@
 
 **Dự án:** Lab Day 08 - RAG Pipeline
 **Ngày:** 2026-04-13
-**Người thực hiện:** Bangils
+**Người thực hiện:** 
 
 ---
 
