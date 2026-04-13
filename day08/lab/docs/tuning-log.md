@@ -1,106 +1,45 @@
-# Tuning Log — RAG Pipeline (Day 08 Lab)
+# Tuning Log — RAG Pipeline Optimization
 
-> Template: Ghi lại mỗi thay đổi và kết quả quan sát được.
-> A/B Rule: Chỉ đổi MỘT biến mỗi lần.
-
----
-
-## Baseline (Sprint 2)
-
-**Ngày:** ___________  
-**Config:**
-```
-retrieval_mode = "dense"
-chunk_size = _____ tokens
-overlap = _____ tokens
-top_k_search = 10
-top_k_select = 3
-use_rerank = False
-llm_model = _____
-```
-
-**Scorecard Baseline:**
-| Metric | Average Score |
-|--------|--------------|
-| Faithfulness | ? /5 |
-| Answer Relevance | ? /5 |
-| Context Recall | ? /5 |
-| Completeness | ? /5 |
-
-**Câu hỏi yếu nhất (điểm thấp):**
-> TODO: Liệt kê 2-3 câu hỏi có điểm thấp nhất và lý do tại sao.
-> Ví dụ: "q07 (Approval Matrix) - context recall = 1/5 vì dense bỏ lỡ alias."
-
-**Giả thuyết nguyên nhân (Error Tree):**
-- [ ] Indexing: Chunking cắt giữa điều khoản
-- [ ] Indexing: Metadata thiếu effective_date
-- [ ] Retrieval: Dense bỏ lỡ exact keyword / alias
-- [ ] Retrieval: Top-k quá ít → thiếu evidence
-- [ ] Generation: Prompt không đủ grounding
-- [ ] Generation: Context quá dài → lost in the middle
+**Dự án:** Lab Day 08 - RAG Pipeline
+**Ngày:** 2026-04-13
+**Người thực hiện:** Bangils
 
 ---
 
-## Variant 1 (Sprint 3)
+## 1. Thử nghiệm: Hybrid Retrieval (Dense + BM25)
 
-**Ngày:** ___________  
-**Biến thay đổi:** ___________  
-**Lý do chọn biến này:**
-> TODO: Giải thích theo evidence từ baseline results.
-> Ví dụ: "Chọn hybrid vì q07 (alias query) và q09 (mã lỗi ERR-403) đều thất bại với dense.
-> Corpus có cả ngôn ngữ tự nhiên (policy) lẫn tên riêng/mã lỗi (ticket code, SLA label)."
+### Biến thay đổi (Variable)
+- **Baseline:** Dense Retrieval (Cosine similarity on Qwen3 embeddings).
+- **Variant:** Hybrid Retrieval (Dense Retrieval + BM25 Sparse Search) sử dụng thuật toán **Reciprocal Rank Fusion (RRF)**.
+- **Tham số:** `dense_weight=0.7`, `sparse_weight=0.3`, `top_k_search=10`, `top_k_select=3`.
 
-**Config thay đổi:**
-```
-retrieval_mode = "hybrid"   # hoặc biến khác
-# Các tham số còn lại giữ nguyên như baseline
-```
-
-**Scorecard Variant 1:**
-| Metric | Baseline | Variant 1 | Delta |
-|--------|----------|-----------|-------|
-| Faithfulness | ?/5 | ?/5 | +/- |
-| Answer Relevance | ?/5 | ?/5 | +/- |
-| Context Recall | ?/5 | ?/5 | +/- |
-| Completeness | ?/5 | ?/5 | +/- |
-
-**Nhận xét:**
-> TODO: Variant 1 cải thiện ở câu nào? Tại sao?
-> Có câu nào kém hơn không? Tại sao?
-
-**Kết luận:**
-> TODO: Variant 1 có tốt hơn baseline không?
-> Bằng chứng là gì? (điểm số, câu hỏi cụ thể)
+### Lý do chọn biến (Rationale)
+Mô hình Dense retrieval hoạt động tốt cho các câu hỏi mang tính ngữ nghĩa, nhưng thường gặp khó khăn với các thuật ngữ kỹ thuật viết tắt hoặc mã định danh duy nhất (unique identifiers). Trong bộ tài liệu CS/IT Helpdesk của chúng ta, các mã lỗi như `ERR-403-AUTH` hoặc các ký hiệu phân loại như `P1` (Priority 1) là những điểm cực kỳ quan trọng. BM25 (Sparse) vượt trội trong việc khớp chính xác các từ khóa này, bổ khuyết cho khả năng hiểu ý nghĩa của Dense Retrieval.
 
 ---
 
-## Variant 2 (nếu có thời gian)
+## 2. Kết quả đánh giá (Evaluation Results)
 
-**Biến thay đổi:** ___________  
-**Config:**
-```
-# TODO
-```
+Dưới đây là bảng so sánh hiệu năng giữa Baseline và Variant dựa trên 10 câu hỏi kiểm thử:
 
-**Scorecard Variant 2:**
-| Metric | Baseline | Variant 1 | Variant 2 | Best |
-|--------|----------|-----------|-----------|------|
-| Faithfulness | ? | ? | ? | ? |
-| Answer Relevance | ? | ? | ? | ? |
-| Context Recall | ? | ? | ? | ? |
-| Completeness | ? | ? | ? | ? |
+| Metric | Baseline (Dense) | Variant (Hybrid) | Delta | Nhận xét |
+|--------|------------------|------------------|-------|----------|
+| **Faithfulness** | 4.70 | **5.00** | +0.30 | Hybrid giúp trích xuất chính xác context chứa từ khóa kỹ thuật, giảm ảo giác. |
+| **Answer Relevance** | **3.40** | 3.30 | -0.10 | Đôi khi việc thêm kết quả từ BM25 mang lại một số context thừa gây nhiễu cho LLM. |
+| **Context Recall** | 5.00 | 5.00 | 0.00 | Cả hai đều tìm được đúng tài liệu cho bộ test set hiện tại. |
+| **Completeness** | 3.70 | **3.80** | +0.10 | Hybrid giúp lấy được các thông tin bổ sung có cùng từ khóa mà Dense bỏ sót. |
 
 ---
 
-## Tóm tắt học được
+## 3. Kết luận (Conclusion)
 
-> TODO (Sprint 4): Điền sau khi hoàn thành evaluation.
+### Variant tốt hơn/kém hơn ở điểm nào?
+- **Tốt hơn:** Variant Hybrid vượt trội ở tính **Trung thực (Faithfulness)**. Việc khớp chính xác từ khóa "P1" hoặc "Refund" giúp LLM nhận được đúng đoạn trích dẫn chứa con số và quy định cụ thể, tránh việc LLM phải suy luận dựa trên các đoạn văn có ý nghĩa tương đương nhưng nội dung khác biệt.
+- **Kém hơn:** Điểm **Relevance** giảm nhẹ do RRF đôi khi ưu tiên các chunk có mật độ từ khóa cao nhưng ngữ cảnh tổng thể kém liên quan hơn so với vector embedding.
 
-1. **Lỗi phổ biến nhất trong pipeline này là gì?**
-   > _____________
+### Bằng chứng (Evidence)
+- Trong câu hỏi **q01 (SLA P1)**, Variant Hybrid luôn đưa chunk về resolution time lên vị trí số 1 nhờ khớp từ khóa "P1", trong khi Baseline đôi khi đưa các chunk về "General Support" lên trên.
+- Trong câu hỏi **q09 (Abstain case)**, Hybrid chỉ ra rõ ràng hơn là không có từ khóa `ERR-403-AUTH` trong bất kỳ tài liệu nào, củng cố tính Grounding cho hệ thống.
 
-2. **Biến nào có tác động lớn nhất tới chất lượng?**
-   > _____________
-
-3. **Nếu có thêm 1 giờ, nhóm sẽ thử gì tiếp theo?**
-   > _____________
+### Quyết định cuối cùng
+Nhóm quyết định sử dụng **Variant Hybrid** cho phiên bản nộp bài cuối cùng (Grading) vì ưu tiên tính chính xác và trung thực của thông tin hỗ trợ kỹ thuật hơn là sự hoa mỹ của câu trả lời.
