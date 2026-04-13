@@ -41,13 +41,12 @@ BASELINE_CONFIG = {
 }
 
 # Cấu hình variant (Sprint 3 — điều chỉnh theo lựa chọn của nhóm)
-# TODO Sprint 4: Cập nhật VARIANT_CONFIG theo variant nhóm đã implement
 VARIANT_CONFIG = {
-    "retrieval_mode": "hybrid",   # Hoặc "dense" nếu chỉ đổi rerank
+    "retrieval_mode": "hybrid",
     "top_k_search": 10,
     "top_k_select": 3,
-    "use_rerank": True,           # Hoặc False nếu variant là hybrid không rerank
-    "label": "variant_hybrid_rerank",
+    "use_rerank": False,
+    "label": "variant_hybrid",
 }
 
 
@@ -88,12 +87,29 @@ def score_faithfulness(
 
     Trả về dict với: score (1-5) và notes (lý do)
     """
-    # TODO Sprint 4: Implement scoring
-    # Tạm thời trả về None (yêu cầu chấm thủ công)
-    return {
-        "score": None,
-        "notes": "TODO: Chấm thủ công hoặc implement LLM-as-Judge",
-    }
+    from rag_answer import call_llm
+    
+    prompt = f"""You are an expert evaluator for RAG systems.
+Given these retrieved chunks:
+{chunks_used}
+
+And this answer:
+{answer}
+
+Rate the faithfulness on a scale of 1-5.
+5 = completely grounded in the provided context.
+1 = answer contains significant information not in the context.
+Output ONLY a JSON object with 'score' (int) and 'reason' (string)."""
+
+    try:
+        response = call_llm(prompt)
+        # Clean response if needed (sometimes LLM adds markdown)
+        import json
+        clean_res = response.strip().replace("```json", "").replace("```", "")
+        data = json.loads(clean_res)
+        return {"score": int(data.get("score", 1)), "notes": data.get("reason", "")}
+    except Exception as e:
+        return {"score": 1, "notes": f"Evaluation error: {e}"}
 
 
 def score_answer_relevance(
@@ -113,10 +129,25 @@ def score_answer_relevance(
 
     TODO Sprint 4: Implement tương tự score_faithfulness
     """
-    return {
-        "score": None,
-        "notes": "TODO: Implement score_answer_relevance",
-    }
+    from rag_answer import call_llm
+    
+    prompt = f"""Rate how relevant this answer is to the user query.
+Query: {query}
+Answer: {answer}
+
+Rate relevance on a scale of 1-5.
+5 = directly and fully answer the query.
+1 = irrelevant or completely misses the point.
+Output ONLY a JSON object with 'score' (int) and 'reason' (string)."""
+
+    try:
+        response = call_llm(prompt)
+        import json
+        clean_res = response.strip().replace("```json", "").replace("```", "")
+        data = json.loads(clean_res)
+        return {"score": int(data.get("score", 1)), "notes": data.get("reason", "")}
+    except Exception as e:
+        return {"score": 1, "notes": f"Evaluation error: {e}"}
 
 
 def score_context_recall(
@@ -198,10 +229,26 @@ def score_completeness(
          Rate completeness 1-5. Are all key points covered?
          Output: {'score': int, 'missing_points': [str]}"
     """
-    return {
-        "score": None,
-        "notes": "TODO: Implement score_completeness (so sánh với expected_answer)",
-    }
+    from rag_answer import call_llm
+    
+    prompt = f"""Compare the model answer with the expected ground truth answer.
+Query: {query}
+Expected Answer: {expected_answer}
+Model Answer: {answer}
+
+Rate completeness on a scale of 1-5.
+5 = covers all key points of the expected answer.
+1 = misses most or all key points.
+Output ONLY a JSON object with 'score' (int) and 'reason' (string)."""
+
+    try:
+        response = call_llm(prompt)
+        import json
+        clean_res = response.strip().replace("```json", "").replace("```", "")
+        data = json.loads(clean_res)
+        return {"score": int(data.get("score", 1)), "notes": data.get("reason", "")}
+    except Exception as e:
+        return {"score": 1, "notes": f"Evaluation error: {e}"}
 
 
 # =============================================================================
@@ -486,30 +533,27 @@ if __name__ == "__main__":
         print("Pipeline chưa implement. Hoàn thành Sprint 2 trước.")
         baseline_results = []
 
-    # --- Chạy Variant (sau khi Sprint 3 hoàn thành) ---
-    # TODO Sprint 4: Uncomment sau khi implement variant trong rag_answer.py
-    # print("\n--- Chạy Variant ---")
-    # variant_results = run_scorecard(
-    #     config=VARIANT_CONFIG,
-    #     test_questions=test_questions,
-    #     verbose=True,
-    # )
-    # variant_md = generate_scorecard_summary(variant_results, VARIANT_CONFIG["label"])
-    # (RESULTS_DIR / "scorecard_variant.md").write_text(variant_md, encoding="utf-8")
+    # --- Chạy Variant ---
+    print("\n--- Chạy Variant ---")
+    try:
+        variant_results = run_scorecard(
+            config=VARIANT_CONFIG,
+            test_questions=test_questions,
+            verbose=True,
+        )
+        variant_md = generate_scorecard_summary(variant_results, VARIANT_CONFIG["label"])
+        scorecard_variant_path = RESULTS_DIR / "scorecard_variant.md"
+        scorecard_variant_path.write_text(variant_md, encoding="utf-8")
+        print(f"\nScorecard lưu tại: {scorecard_variant_path}")
 
-    # --- A/B Comparison ---
-    # TODO Sprint 4: Uncomment sau khi có cả baseline và variant
-    # if baseline_results and variant_results:
-    #     compare_ab(
-    #         baseline_results,
-    #         variant_results,
-    #         output_csv="ab_comparison.csv"
-    #     )
+        # --- A/B Comparison ---
+        if baseline_results and variant_results:
+            compare_ab(
+                baseline_results,
+                variant_results,
+                output_csv="ab_comparison.csv"
+            )
+    except Exception as e:
+        print(f"Lỗi khi chạy variant: {e}")
 
-    print("\n\nViệc cần làm Sprint 4:")
-    print("  1. Hoàn thành Sprint 2 + 3 trước")
-    print("  2. Chấm điểm thủ công hoặc implement LLM-as-Judge trong score_* functions")
-    print("  3. Chạy run_scorecard(BASELINE_CONFIG)")
-    print("  4. Chạy run_scorecard(VARIANT_CONFIG)")
-    print("  5. Gọi compare_ab() để thấy delta")
-    print("  6. Cập nhật docs/tuning-log.md với kết quả và nhận xét")
+    print("\n\nSprint 4 Completed.")

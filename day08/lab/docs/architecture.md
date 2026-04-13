@@ -1,8 +1,5 @@
 # Architecture — RAG Pipeline (Day 08 Lab)
 
-> Template: Điền vào các mục này khi hoàn thành từng sprint.
-> Deliverable của Documentation Owner.
-
 ## 1. Tổng quan kiến trúc
 
 ```
@@ -10,7 +7,7 @@
     ↓
 [index.py: Preprocess → Chunk → Embed → Store]
     ↓
-[ChromaDB Vector Store]
+[Qdrant Vector Database]
     ↓
 [rag_answer.py: Query → Retrieve → Rerank → Generate]
     ↓
@@ -18,7 +15,7 @@
 ```
 
 **Mô tả ngắn gọn:**
-> TODO: Mô tả hệ thống trong 2-3 câu. Nhóm xây gì? Cho ai dùng? Giải quyết vấn đề gì?
+Hệ thống RAG hỗ trợ tra cứu các quy trình nội bộ (SLA, Refund, Access Control) cho nhân viên CS và IT. Hệ thống giải quyết vấn đề tìm kiếm thông tin phân tán trong nhiều file tài liệu khác nhau bằng cách cung cấp câu trả lời tổng hợp kèm trích dẫn nguồn cụ thể.
 
 ---
 
@@ -27,24 +24,24 @@
 ### Tài liệu được index
 | File | Nguồn | Department | Số chunk |
 |------|-------|-----------|---------|
-| `policy_refund_v4.txt` | policy/refund-v4.pdf | CS | TODO |
-| `sla_p1_2026.txt` | support/sla-p1-2026.pdf | IT | TODO |
-| `access_control_sop.txt` | it/access-control-sop.md | IT Security | TODO |
-| `it_helpdesk_faq.txt` | support/helpdesk-faq.md | IT | TODO |
-| `hr_leave_policy.txt` | hr/leave-policy-2026.pdf | HR | TODO |
+| `policy_refund_v4.txt` | policy/refund-v4.pdf | CS | 9 |
+| `sla_p1_2026.txt` | support/sla-p1-2026.pdf | IT | 2 |
+| `access_control_sop.txt` | it/access-control-sop.md | IT Security | 5 |
+| `it_helpdesk_faq.txt` | support/helpdesk-faq.md | IT | 7 |
+| `hr_leave_policy.txt` | hr/leave-policy-2026.pdf | HR | 6 |
 
 ### Quyết định chunking
 | Tham số | Giá trị | Lý do |
 |---------|---------|-------|
-| Chunk size | TODO tokens | TODO |
-| Overlap | TODO tokens | TODO |
-| Chunking strategy | Heading-based / paragraph-based | TODO |
-| Metadata fields | source, section, effective_date, department, access | Phục vụ filter, freshness, citation |
+| Chunk size | ~500 chars | Cân bằng giữa ngữ cảnh và độ chính xác |
+| Overlap | 100 chars | Tránh mất ngữ cảnh ở biên các chunk |
+| Chunking strategy | Paragraph-based (\n\n) | Giữ trọn vẹn các điều khoản hoặc câu hỏi/trả lời |
+| Metadata fields | source, section, direct, access, etc. | Phục vụ trích dẫn và lọc dữ liệu |
 
 ### Embedding model
-- **Model**: TODO (OpenAI text-embedding-3-small / paraphrase-multilingual-MiniLM-L12-v2)
-- **Vector store**: ChromaDB (PersistentClient)
-- **Similarity metric**: Cosine
+- **Model**: `Qwen/Qwen3-Embedding-0.6B` (Local)
+- **Vector store**: Qdrant (Cloud/Local)
+- **Similarity metric**: Cosine (với query_points / search)
 
 ---
 
@@ -61,15 +58,14 @@
 ### Variant (Sprint 3)
 | Tham số | Giá trị | Thay đổi so với baseline |
 |---------|---------|------------------------|
-| Strategy | TODO (hybrid / dense) | TODO |
-| Top-k search | TODO | TODO |
-| Top-k select | TODO | TODO |
-| Rerank | TODO (cross-encoder / MMR) | TODO |
-| Query transform | TODO (expansion / HyDE / decomposition) | TODO |
+| Strategy | Hybrid (Dense + BM25) | Thêm keyword search với RRF |
+| Top-k search | 10 | Như cũ |
+| Top-k select | 3 | Như cũ |
+| Rerank | Không | Chưa sử dụng cross-encoder |
+| Query transform | Không | Giữ nguyên query gốc |
 
 **Lý do chọn variant này:**
-> TODO: Giải thích tại sao chọn biến này để tune.
-> Ví dụ: "Chọn hybrid vì corpus có cả câu tự nhiên (policy) lẫn mã lỗi và tên chuyên ngành (SLA ticket P1, ERR-403)."
+Variant Hybrid được chọn vì hệ thống cần tra cứu các thuật ngữ kỹ thuật và mã lỗi (ví dụ: ERR-403, P1) - những thông tin mà Dense Retrieval đôi khi bỏ lỡ do xu hướng tập trung vào ý nghĩa ngữ nghĩa thay vì khớp từ khóa chính xác.
 
 ---
 
@@ -96,8 +92,8 @@ Answer:
 ### LLM Configuration
 | Tham số | Giá trị |
 |---------|---------|
-| Model | TODO (gpt-4o-mini / gemini-1.5-flash) |
-| Temperature | 0 (để output ổn định cho eval) |
+| Model | `gemini-1.5-flash` |
+| Temperature | 0 (ổn định kết quả) |
 | Max tokens | 512 |
 
 ---
