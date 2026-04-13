@@ -1,6 +1,6 @@
 # Group Report — Lab Day 08: RAG Pipeline
 
-**Nhóm:** Bangils Team  
+**Nhóm:** 004
 **Thành viên:** 
 - **Bùi Trọng Anh**: Tech Lead & Documentation Owner (Sprints 1, 2, 4)
 - **Nguyễn Bằng Anh**: Retrieval Owner (Sprints 1, 3)
