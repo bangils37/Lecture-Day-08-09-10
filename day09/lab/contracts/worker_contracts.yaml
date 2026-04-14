@@ -7,8 +7,8 @@
 #
 # TODO Sprint 2: Cập nhật "actual_implementation" khi đã implement xong.
 
-version: "1.0"
-updated_at: "2026-04-13"
+version: "1.1"
+updated_at: "2026-04-14"
 
 # ─────────────────────────────────────────────
 # Supervisor
@@ -38,11 +38,11 @@ supervisor:
       type: boolean
       required: true
   routing_rules:
-    - condition: "task chứa 'hoàn tiền', 'refund', 'flash sale', 'license', 'cấp quyền', 'access level'"
+    - condition: "task chứa 'hoàn tiền', 'refund', 'flash sale', 'license', 'cấp quyền', 'access', 'level 3'"
       route: "policy_tool_worker"
     - condition: "task chứa 'P1', 'SLA', 'ticket', 'escalation', 'sự cố'"
       route: "retrieval_worker"
-    - condition: "task chứa mã lỗi không rõ (ERR-xxx) VÀ không có context"
+    - condition: "task chứa mã lỗi không rõ (ERR-xxx) và risk_high=True"
       route: "human_review"
     - condition: "default"
       route: "retrieval_worker"
@@ -85,8 +85,8 @@ retrieval_worker:
       description: "Unique list of source filenames"
     worker_io_logs:
       type: array
-      required: true
-      description: "Log input/output của worker (append to array)"
+      required: false
+      description: "(Optional) Log input/output của worker"
   error_format:
     code: "RETRIEVAL_FAILED"
     reason: string
@@ -97,7 +97,7 @@ retrieval_worker:
     - "Stateless: không đọc hoặc ghi state ngoài những gì được khai báo ở trên"
   actual_implementation:
     status: "Done"  # Updated after Sprint 4
-    notes: "Semantic search with robust keyword-based fallback implemented."
+    notes: "Keyword-first retrieval from data/docs implemented; Qdrant/vector path scaffolded but disabled in current environment."
 
 # ─────────────────────────────────────────────
 # Policy Tool Worker
@@ -157,7 +157,7 @@ policy_tool_worker:
         timestamp: string
     worker_io_logs:
       type: array
-      required: true
+      required: false
   error_format:
     code: "POLICY_CHECK_FAILED"
     reason: string
@@ -167,7 +167,7 @@ policy_tool_worker:
     - "Không được tự bịa policy rules không có trong tài liệu"
   actual_implementation:
     status: "Done"
-    notes: "Integrated with check_access_permission and get_ticket_info tools."
+    notes: "Integrated with check_access_permission and get_ticket_info tools; combines MCP results with chunk-based refund/access rules."
 
 # ─────────────────────────────────────────────
 # Synthesis Worker
@@ -204,18 +204,17 @@ synthesis_worker:
       description: "Mức độ tin cậy 0.0-1.0"
     worker_io_logs:
       type: array
-      required: true
+      required: false
   error_format:
     code: "SYNTHESIS_FAILED"
     reason: string
   constraints:
     - "Phải có citation [1] hoặc [source_name] trong answer nếu có chunks"
     - "Nếu retrieved_chunks=[] → phải abstain, không hallucinate"
-    - "confidence < 0.4 → khuyến khích set hitl_triggered=True"
     - "Không được dùng kiến thức ngoài context được cung cấp"
   actual_implementation:
     status: "Done"
-    notes: "Gemini-powered synthesis with source citations and confidence scoring."
+    notes: "Gemini-powered synthesis with rule-based fallback; confidence heuristic depends on retrieved chunks and abstain state."
 
 # ─────────────────────────────────────────────
 # MCP Server
