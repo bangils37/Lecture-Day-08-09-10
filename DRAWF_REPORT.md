@@ -14,7 +14,7 @@ Dùng để các thành viên trong nhóm  trò chuyện, thống nhất và not
 
 | Vai trò | Trách nhiệm chính | Sprint lead | Phân công |
 |---------|------------------|------------|-----------|
-| **Tech Lead** | Giữ nhịp sprint, nối code end-to-end | 1, 2 | Bùi Trọng Anh |
-| **Retrieval Owner** | Chunking, metadata, retrieval strategy, rerank | 1, 3 | Nguyễn Bằng Anh |
-| **Eval Owner** | Test questions, expected evidence, scorecard, A/B | 3, 4 | Đỗ Thị Thùy Trang |
-| **Documentation Owner** | architecture.md, tuning-log, báo cáo nhóm | 4 | Bùi Trọng Anh |
+| **Supervisor Owner** | graph.py, routing logic, state management | 1 | Bùi Trọng Anh |
+| **Worker Owner** | retrieval.py, policy_tool.py, synthesis.py, contracts | 2 | Nguyễn Bằng Anh |
+| **MCP Owner** | mcp_server.py, MCP integration trong policy_tool | 3 | Đỗ Thị Thùy Trang |
+| **Trace & Docs Owner** | eval_trace.py, 3 doc templates, group_report | 4 | Bùi Trọng Anh |

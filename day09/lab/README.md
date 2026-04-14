@@ -85,6 +85,11 @@ lab/
 
 ### 1. Cài dependencies
 ```bash
+python -m venv .venv
+.venv\Scripts\activate
+
+cd .\day09\lab
+
 pip install -r requirements.txt
 ```
 
@@ -329,5 +334,3 @@ Nếu pipeline trả lời sai, kiểm tra lần lượt:
 - Lab Day 08 (baseline): `../../day08/lab/`
 - LangGraph docs: https://langchain-ai.github.io/langgraph/
 - MCP spec: https://modelcontextprotocol.io/docs
-- ChromaDB: https://docs.trychroma.com
-- OpenAI Function Calling: https://platform.openai.com/docs/guides/function-calling

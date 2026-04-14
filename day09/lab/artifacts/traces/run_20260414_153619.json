@@ -1,0 +1,52 @@
+{
+  "task": "Gửi mã lỗi ERR-999 khẩn cấp cho admin.",
+  "route_reason": "unknown error code + risk_high → human review",
+  "risk_high": true,
+  "needs_tool": false,
+  "hitl_triggered": true,
+  "retrieved_chunks": [
+    {
+      "text": "=== Section 1: Phạm vi và mục đích ===\nTài liệu này quy định quy trình cấp phép truy cập vào các hệ thống nội bộ của công ty.\nÁp dụng cho tất cả nhân viên, contractor, và third-party vendor.",
+      "source": "access_control_sop.txt",
+      "score": 0.25,
+      "metadata": {}
+    },
+    {
+      "text": "=== Section 4: Escalation khi cần thay đổi quyền hệ thống ===\nEscalation chỉ áp dụng khi cần thay đổi quyền hệ thống ngoài quy trình thông thường.\nVí dụ: Khẩn cấp trong sự cố P1, cần cấp quyền tạm thời để fix incident.",
+      "source": "access_control_sop.txt",
+      "score": 0.25,
+      "metadata": {}
+    },
+    {
+      "text": "Quy trình escalation khẩn cấp:\n1. On-call IT Admin có thể cấp quyền tạm thời (max 24 giờ) sau khi được Tech Lead phê duyệt bằng lời.\n2. Sau 24 giờ, phải có ticket chính thức hoặc quyền bị thu hồi tự động.\n3. Mọi quyền tạm thời phải được ghi log vào hệ thống Security Audit.",
+      "source": "access_control_sop.txt",
+      "score": 0.25,
+      "metadata": {}
+    }
+  ],
+  "retrieved_sources": [
+    "access_control_sop.txt"
+  ],
+  "policy_result": {},
+  "mcp_tools_used": [],
+  "final_answer": "Tôi không tìm thấy thông tin cụ thể trong tài liệu nội bộ.",
+  "sources": [
+    "access_control_sop.txt"
+  ],
+  "confidence": 0.3,
+  "history": [
+    "[supervisor] route=human_review reason=unknown error code + risk_high → human review",
+    "[human_review] HITL triggered — auto-approving",
+    "[retrieval_worker] found 3 chunks",
+    "[synthesis_worker] generated answer (conf=0.3)",
+    "[graph] completed in 758ms"
+  ],
+  "workers_called": [
+    "human_review",
+    "retrieval_worker",
+    "synthesis_worker"
+  ],
+  "supervisor_route": "retrieval_worker",
+  "latency_ms": 758,
+  "run_id": "run_20260414_153619"
+}

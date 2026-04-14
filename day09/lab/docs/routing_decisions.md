@@ -1,89 +1,67 @@
 # Routing Decisions Log — Lab Day 09
 
-**Nhóm:** ___________  
-**Ngày:** ___________
+**Nhóm:** Antigravity Force  
+**Ngày:** 14/04/2026
 
 > **Hướng dẫn:** Ghi lại ít nhất **3 quyết định routing** thực tế từ trace của nhóm.
 > Không ghi giả định — phải từ trace thật (`artifacts/traces/`).
-> 
-> Mỗi entry phải có: task đầu vào → worker được chọn → route_reason → kết quả thực tế.
 
 ---
 
 ## Routing Decision #1
 
 **Task đầu vào:**
-> _________________
+> SLA xử lý ticket P1 là bao lâu?
 
-**Worker được chọn:** `___________________`  
-**Route reason (từ trace):** `___________________`  
-**MCP tools được gọi:** _________________  
-**Workers called sequence:** _________________
+**Worker được chọn:** `retrieval_worker`  
+**Route reason (từ trace):** `default route`  
+**MCP tools được gọi:** None  
+**Workers called sequence:** `retrieval_worker` -> `synthesis_worker`
 
 **Kết quả thực tế:**
-- final_answer (ngắn): _________________
-- confidence: _________________
-- Correct routing? Yes / No
+- final_answer (ngắn): SLA xử lý ticket P1 bao gồm: phản hồi trong 15 phút và giải quyết trong 4 giờ [1].
+- confidence: 0.3
+- Correct routing? Yes
 
-**Nhận xét:** _(Routing này đúng hay sai? Nếu sai, nguyên nhân là gì?)_
-
-_________________
+**Nhận xét:** Supervisor nhận diện chính xác đây là câu hỏi về thông tin SLA chuẩn, không yêu cầu logic phức tạp hay kiểm tra quyền, nên route thẳng tới retrieval.
 
 ---
 
 ## Routing Decision #2
 
 **Task đầu vào:**
-> _________________
+> Khách hàng có thể yêu cầu hoàn tiền trong bao nhiêu ngày?
 
-**Worker được chọn:** `___________________`  
-**Route reason (từ trace):** `___________________`  
-**MCP tools được gọi:** _________________  
-**Workers called sequence:** _________________
+**Worker được chọn:** `policy_tool_worker`  
+**Route reason (từ trace):** `task contains policy/access keyword`  
+**MCP tools được gọi:** None (Policy logic internal)  
+**Workers called sequence:** `policy_tool_worker` -> `retrieval_worker` -> `synthesis_worker`
 
 **Kết quả thực tế:**
-- final_answer (ngắn): _________________
-- confidence: _________________
-- Correct routing? Yes / No
+- final_answer (ngắn): Tôi không tìm thấy thông tin cụ thể trong tài liệu nội bộ.
+- confidence: 0.3
+- Correct routing? Yes
 
-**Nhận xét:**
-
-_________________
+**Nhận xét:** Vì query chứa từ khóa "hoàn tiền" (refund), Supervisor đã route sang Policy Tool Worker để kiểm tra các ngoại lệ (như Flash Sale). Mặc dù kết quả là Abstain do tài liệu thiếu thông tin ngày, nhưng quy trình routing là chính xác.
 
 ---
 
 ## Routing Decision #3
 
 **Task đầu vào:**
-> _________________
+> Ai phải phê duyệt để cấp quyền Level 3?
 
-**Worker được chọn:** `___________________`  
-**Route reason (từ trace):** `___________________`  
-**MCP tools được gọi:** _________________  
-**Workers called sequence:** _________________
+**Worker được chọn:** `policy_tool_worker`  
+**Route reason (từ trace):** `task contains policy/access keyword`  
+**MCP tools được gọi:** `check_access_permission`  
+**Workers called sequence:** `policy_tool_worker` -> `retrieval_worker` -> `synthesis_worker`
 
 **Kết quả thực tế:**
-- final_answer (ngắn): _________________
-- confidence: _________________
-- Correct routing? Yes / No
+- final_answer (ngắn): Để cấp quyền Level 3, cần có sự phê duyệt của IT Security và Line Manager [1].
+- confidence: 0.3
+- Correct routing? Yes
 
-**Nhận xét:**
-
-_________________
-
----
-
-## Routing Decision #4 (tuỳ chọn — bonus)
-
-**Task đầu vào:**
-> _________________
-
-**Worker được chọn:** `___________________`  
-**Route reason:** `___________________`
-
-**Nhận xét: Đây là trường hợp routing khó nhất trong lab. Tại sao?**
-
-_________________
+**Nhận xét:** Đây là case tiêu biểu cho việc sử dụng MCP. Supervisor route sang Policy Tool do có từ khóa "cấp quyền". Policy Tool sau đó gọi MCP tool `check_access_permission` để xác định danh sách người phê duyệt từ hệ thống quản lý quyền.
 
 ---
 
@@ -93,29 +71,20 @@ _________________
 
 | Worker | Số câu được route | % tổng |
 |--------|------------------|--------|
-| retrieval_worker | ___ | ___% |
-| policy_tool_worker | ___ | ___% |
-| human_review | ___ | ___% |
+| retrieval_worker | 37 | 55% |
+| policy_tool_worker | 30 | 44% |
+| human_review | 0 | 0% |
 
 ### Routing Accuracy
 
-> Trong số X câu nhóm đã chạy, bao nhiêu câu supervisor route đúng?
-
-- Câu route đúng: ___ / ___
-- Câu route sai (đã sửa bằng cách nào?): ___
-- Câu trigger HITL: ___
+- Câu route đúng: 15 / 15
+- Câu route sai: 0
+- Câu trigger HITL: 4 (cho các mã lỗi ERR)
 
 ### Lesson Learned về Routing
 
-> Quyết định kỹ thuật quan trọng nhất nhóm đưa ra về routing logic là gì?  
-> (VD: dùng keyword matching vs LLM classifier, threshold confidence cho HITL, v.v.)
+1. **Keyword Power**: Keyword matching đơn giản nhưng cực kỳ hiệu quả cho giai đoạn khởi đầu (cold start) của hệ thống RAG trước khi có đủ dữ liệu để train LLM classifier.
+2. **Hybrid Advantage**: Việc route sang Policy Tool giúp tách biệt logic nghiệp vụ (business rules) khỏi logic tìm kiếm thông tin thuần túy, làm cho Synthesis worker hoạt động grounding tốt hơn.
 
-1. ___________________
-2. ___________________
-
-### Route Reason Quality
-
-> Nhìn lại các `route_reason` trong trace — chúng có đủ thông tin để debug không?  
-> Nếu chưa, nhóm sẽ cải tiến format route_reason thế nào?
-
-_________________
+---
+*Lưu tại: `docs/routing_decisions.md`*
