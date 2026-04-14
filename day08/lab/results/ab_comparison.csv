@@ -1,412 +1,441 @@
 id,category,query,answer,expected_answer,faithfulness,faithfulness_notes,relevance,relevance_notes,context_recall,context_recall_notes,completeness,completeness_notes,config_label
-gq01,SLA,SLA xử lý ticket P1 đã thay đổi như thế nào so với phiên bản trước?,"*   Question: ""SLA xử lý ticket P1 đã thay đổi như thế nào so với phiên bản trước?"" (How has the P1 ticket resolution SLA changed compared to the previous version?)
-    *   Constraint 1: Answer only from retrieved context.
-    *   Constraint 2: If insufficient, say ""do not know"".
-    *   Constraint 3: Cite source field in brackets [1].
-    *   Constraint 4: Short, clear, factual.
-    *   Constraint 5: Respond in the same language (Vietnamese).
-
-    *   [1] mentions ""v2026.1 (2026-01-15): Cập nhật SLA P1 resolution từ 6 giờ xuống 4 giờ."" (Updated P1 resolution SLA from 6 hours to 4 hours).
-    *   [2] lists current P1 resolution as 4 hours.
-    *   [3] discusses tools and communication channels.
-
-    *   The change is specifically mentioned in [1].
-    *   The P1 resolution SLA was updated from 6 hours down to 4 hours.
-SLA xử lý (resolution) ticket P1 đã được cập nhật giảm từ 6 giờ xuống còn 4 giờ [1].","Phiên bản hiện tại (v2026.1, có hiệu lực từ 2026-01-15) đã cập nhật SLA P1 resolution từ 6 giờ xuống còn 4 giờ. Phiên bản trước (v2025.3) không thay đổi SLA này.",1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),5,Retrieved: 1/1 expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),baseline_dense
-gq02,Cross-Document,"Khi làm việc remote, tôi phải dùng VPN và được kết nối trên tối đa bao nhiêu thiết bị?","*   Question: ""Khi làm việc remote, tôi phải dùng VPN và được kết nối trên tối đa bao nhiêu thiết bị?"" (When working remotely, I must use a VPN and can be connected on how many devices maximum?)
-    *   Constraint 1: Answer only from retrieved context.
-    *   Constraint 2: If insufficient, say ""I don't know"".
-    *   Constraint 3: Cite source field in brackets (e.g., [1]).
-    *   Constraint 4: Keep answer short, clear, and factual.
-    *   Constraint 5: Respond in the same language as the question (Vietnamese).
-
-    *   [1] `support/helpdesk-faq.md`: Mentions Cisco AnyConnect. Specifically says: ""VPN có giới hạn số thiết bị không? A: Mỗi tài khoản được kết nối VPN trên tối đa 2 thiết bị cùng lúc."" (Does VPN have a device limit? A: Each account can connect to VPN on a maximum of 2 devices at the same time.)
-    *   [2] `hr/leave-policy-2026.pdf`: Mentions VPN is mandatory when working with internal systems.
-    *   [3] `it/access-control-sop.md`: Discusses access levels, not VPN device limits.
-
-    *   The user asks about the maximum number of devices for VPN connection.
-    *   Source [1] explicitly states: ""Mỗi tài khoản được kết nối VPN trên tối đa 2 thiết bị cùng lúc.""
-
-    *   Answer: Mỗi tài khoản được kết nối VPN trên tối đa 2 thiết bị cùng lúc [1].
-Mỗi tài khoản được kết nối VPN trên tối đa 2 thiết bị cùng lúc [1].","Khi làm việc remote và truy cập hệ thống nội bộ, VPN là bắt buộc (theo HR Leave Policy). Phần mềm VPN là Cisco AnyConnect và mỗi tài khoản được kết nối VPN trên tối đa 2 thiết bị cùng lúc (theo IT Helpdesk FAQ).",1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),5,Retrieved: 2/2 expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),baseline_dense
-gq03,Refund,Đơn hàng mua trong chương trình Flash Sale và đã kích hoạt sản phẩm có được hoàn tiền không?,"*   Question: ""Đơn hàng mua trong chương trình Flash Sale và đã kích hoạt sản phẩm có được hoàn tiền không?"" (Are orders bought during a Flash Sale and with activated products refundable?)
-    *   Constraint 1: Answer only from retrieved context.
-    *   Constraint 2: If insufficient, say ""do not know"".
-    *   Constraint 3: Cite source field in brackets (e.g., [1]).
-    *   Constraint 4: Keep answer short, clear, and factual.
-    *   Constraint 5: Respond in the same language as the question (Vietnamese).
-
-    *   [1] policy/refund-v4.pdf | Điều 3: Điều kiện áp dụng và ngoại lệ:
-        *   Refund request must be sent within 7 days.
-        *   Exceptions (NOT refundable):
-            *   Digital products (license key, subscription).
-            *   Orders with special discount codes from Flash Sale programs.
-            *   Products that have been activated or accounts registered.
-    *   [2] policy/refund-v4.pdf | Điều 1: Scope of application.
-    *   [3] policy/refund-v4.pdf | Điều 5: Refund methods.
-
-    *   The question asks about orders that are *both* from a Flash Sale *and* have been activated.
-    *   Context [1] explicitly lists ""Đơn hàng đã áp dụng mã giảm giá đặc biệt theo chương trình khuyến mãi Flash Sale"" (Orders with special discount codes from Flash Sale programs) and ""Sản phẩm đã được kích hoạt hoặc đăng ký tài khoản"" (Products that have been activated or accounts registered) as exceptions that are *not* refundable (""Ngoại lệ không được hoàn tiền"").
-
-    *   No, they are not refundable.
-    *   Reason: They fall under the exceptions for Flash Sale orders and activated products.
-    *   Citation: [1].
-
-    *   Đơn hàng mua trong chương trình Flash Sale và sản phẩm đã được kích hoạt không được hoàn tiền [1].
-Đơn hàng mua trong chương trình Flash Sale và sản phẩm đã được kích hoạt không được hoàn tiền [1].",Không được hoàn tiền. Đơn hàng rơi vào hai ngoại lệ cùng lúc: (1) đơn hàng áp dụng mã giảm giá chương trình Flash Sale và (2) sản phẩm đã được kích hoạt - cả hai đều thuộc danh sách ngoại lệ không được hoàn tiền theo Điều 3 của chính sách.,1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),5,Retrieved: 1/1 expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),baseline_dense
-gq04,Refund,"Nếu chọn nhận store credit thay vì hoàn tiền, tôi được bao nhiêu phần trăm so với số tiền gốc?","*   Question: ""Nếu chọn nhận store credit thay vì hoàn tiền, tôi được bao nhiêu phần trăm so với số tiền gốc?"" (If I choose store credit instead of a refund, what percentage of the original amount do I get?)
-    *   Constraint 1: Answer only from retrieved context.
-    *   Constraint 2: If insufficient, say ""I don't know"".
-    *   Constraint 3: Cite source field in brackets [1].
-    *   Constraint 4: Keep answer short, clear, and factual.
-    *   Constraint 5: Respond in the same language as the question (Vietnamese).
-
-    *   [1] mentions: ""Hoàn tiền qua credit nội bộ (store credit): khách hàng có thể chọn nhận store credit thay thế với giá trị 110% so với số tiền hoàn."" (Refund via internal credit (store credit): customers can choose to receive replacement store credit with a value of 110% compared to the refund amount.)
-    *   [2] discusses conditions and exceptions.
-    *   [3] discusses the process.
-
-    *   The answer is 110%.
-    *   Source is [1].
-
-    *   Nếu chọn nhận store credit, bạn sẽ nhận được giá trị 110% so với số tiền hoàn [1].
-Nếu chọn nhận store credit, bạn sẽ nhận được giá trị 110% so với số tiền hoàn [1].","Khách hàng có thể chọn nhận store credit (credit nội bộ) thay thế với giá trị 110% so với số tiền hoàn gốc. Đây là tùy chọn, không phải bắt buộc.",1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),5,Retrieved: 1/1 expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),baseline_dense
-gq05,Access Control,"Contractor từ bên ngoài công ty có thể được cấp quyền Admin Access không? Nếu có, cần bao nhiêu ngày và có yêu cầu đặc biệt gì?","*   Question: ""Contractor từ bên ngoài công ty có thể được cấp quyền Admin Access không? Nếu có, cần bao nhiêu ngày và có yêu cầu đặc biệt gì?"" (Can external contractors be granted Admin Access? If yes, how many days are needed and are there any special requirements?)
-    *   Constraint: Answer *only* from the retrieved context. If insufficient, say ""I don't know"". Cite sources [1], [2], [3]. Keep it short, clear, factual. Respond in Vietnamese.
-
-    *   [1] Defines access levels. Level 4 is ""Admin Access"". It applies to ""DevOps, SRE, IT Admin"". Processing time: 5 working days. Additional requirement: Mandatory training on security policy.
-    *   [2] Describes the request process.
-    *   [3] Defines scope: The document applies to ""tất cả nhân viên, contractor, và third-party vendor"" (all employees, contractors, and third-party vendors).
-
-    *   *Can contractors be granted Admin Access?* Context [3] says the document applies to contractors. Context [1] defines Admin Access. While [1] lists specific roles (DevOps, SRE, IT Admin), [3] explicitly includes contractors in the scope of the access control SOP. Therefore, it is implied they can be granted access according to the rules.
-    *   *How many days?* For Level 4 (Admin Access), the processing time is 5 working days [1].
-    *   *Special requirements?* Mandatory training on security policy [1].
-
-    *   Contractors are within the scope of the access control policy [3].
-    *   Admin Access (Level 4) takes 5 working days to process [1].
-    *   Special requirement: Mandatory training on security policy [1].
-Có, contractor nằm trong phạm vi áp dụng của quy trình cấp phép truy cập [3]. Để được cấp quyền Admin Access (Level 4), thời gian xử lý là 5 ngày làm việc và yêu cầu bắt buộc phải training về security policy [1].","Có. Theo Access Control SOP, quy trình áp dụng cho tất cả nhân viên, contractor và third-party vendor. Admin Access (Level 4) cần phê duyệt từ IT Manager và CISO, thời gian xử lý 5 ngày làm việc, và có yêu cầu thêm: training bắt buộc về security policy.",1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),5,Retrieved: 1/1 expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),baseline_dense
-gq06,Cross-Document,"Lúc 2 giờ sáng xảy ra sự cố P1, on-call engineer cần cấp quyền tạm thời cho một engineer xử lý incident. Quy trình cụ thể như thế nào và quyền này tồn tại bao lâu?","*   Question: ""Lúc 2 giờ sáng xảy ra sự cố P1, on-call engineer cần cấp quyền tạm thời cho một engineer xử lý incident. Quy trình cụ thể như thế nào và quyền này tồn tại bao lâu?"" (At 2 AM a P1 incident occurs, the on-call engineer needs to grant temporary access to an engineer handling the incident. What is the specific process and how long does this access last?)
-    *   Constraint 1: Answer only from retrieved context.
-    *   Constraint 2: If insufficient, say ""do not know"".
-    *   Constraint 3: Cite source field in brackets [1].
-    *   Constraint 4: Short, clear, factual.
-    *   Constraint 5: Respond in the same language (Vietnamese).
-
-    *   [1] `it/access-control-sop.md`: Discusses escalation for system permission changes. Specifically mentions P1 incidents and temporary access.
-        *   Process: On-call IT Admin can grant temporary access after verbal approval from Tech Lead.
-        *   Duration: Max 24 hours.
-        *   Post-action: After 24 hours, a formal ticket is needed or access is automatically revoked.
-        *   Logging: Must be logged in Security Audit system.
-    *   [2] `support/sla-p1-2026.pdf`: Discusses P1 incident handling steps (Reception, Notification, Triage, Handling, Resolution). No specific details on granting temporary access permissions.
-    *   [3] `support/sla-p1-2026.pdf`: Version history. Not relevant.
-
-    *   Process: On-call IT Admin grants temporary access after verbal approval from Tech Lead [1].
-    *   Duration: Maximum 24 hours [1].
-    *   Additional requirements: Must be logged in the Security Audit system [1], and after 24 hours, a formal ticket is required or access is automatically revoked [1].
-Quy trình cấp quyền tạm thời trong sự cố P1 như sau:
-- On-call IT Admin cấp quyền tạm thời sau khi được Tech Lead phê duyệt bằng lời [1].
-- Mọi quyền tạm thời phải được ghi log vào hệ thống Security Audit [1].
-
-Quyền này tồn tại tối đa 24 giờ [1]. Sau thời gian này, quyền sẽ bị thu hồi tự động hoặc phải có ticket chính thức [1].","On-call IT Admin có thể cấp quyền tạm thời (tối đa 24 giờ) sau khi được Tech Lead phê duyệt bằng lời. Sau 24 giờ, phải có ticket chính thức hoặc quyền bị thu hồi tự động. Mọi quyền tạm thời phải được ghi log vào hệ thống Security Audit. Liên hệ on-call qua hotline ext. 9999 (24/7) theo SLA P1.",1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),5,Retrieved: 2/2 expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),baseline_dense
-gq07,Insufficient Context,Công ty sẽ phạt bao nhiêu nếu team IT vi phạm cam kết SLA P1?,"*   Question: ""Công ty sẽ phạt bao nhiêu nếu team IT vi phạm cam kết SLA P1?"" (How much will the company fine if the IT team violates the P1 SLA commitment?)
-    *   Constraint 1: Answer only from the retrieved context.
-    *   Constraint 2: If insufficient, say ""I do not know"" and do not make up information.
-    *   Constraint 3: Cite source field in brackets [1].
-    *   Constraint 4: Keep answer short, clear, and factual.
-    *   Constraint 5: Respond in the same language as the question (Vietnamese).
-
-    *   [1] discusses version history (resolution time changed from 6h to 4h).
-    *   [2] discusses tools and communication channels (Jira, Slack, PagerDuty, Hotline).
-    *   [3] defines priority levels (P1, P2, P3, P4).
-
-    *   The context mentions the resolution time for P1 (4 hours in v2026.1) and the definition of P1.
-    *   There is *no* mention of fines, penalties, or monetary consequences for violating the SLA.
-
-    *   Since the information is not in the context, I must state that I do not know.
-Tôi không biết vì thông tin về mức phạt khi vi phạm cam kết SLA P1 không có trong ngữ cảnh được cung cấp.","Tài liệu hiện có không quy định mức phạt hay hình thức xử lý khi vi phạm SLA P1. Tài liệu sla-p1-2026.pdf chỉ mô tả quy trình xử lý và SLA target, không có điều khoản về penalty.",1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),,No expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),baseline_dense
-gq08,HR Policy,Nhân viên phải báo trước bao nhiêu ngày để xin nghỉ phép năm? Con số này có giống với số ngày cần giấy tờ khi nghỉ ốm không?,"*   Question: ""Nhân viên phải báo trước bao nhiêu ngày để xin nghỉ phép năm? Con số này có giống với số ngày cần giấy tờ khi nghỉ ốm không?"" (How many days in advance must an employee notify for annual leave? Is this number the same as the number of days requiring documentation for sick leave?)
-    *   Constraint 1: Answer only from retrieved context.
-    *   Constraint 2: If insufficient, say ""I don't know"".
-    *   Constraint 3: Cite source field in brackets [1].
-    *   Constraint 4: Short, clear, factual.
-    *   Constraint 5: Respond in the same language (Vietnamese).
-
-    *   Context [1]:
-        *   Annual Leave: 12, 15, or 18 days depending on experience. Max 5 days carry over.
-        *   Sick Leave: 10 paid days. Notify Line Manager before 9:00 AM. If off for *more than 3 consecutive days*, medical documents are required.
-    *   Context [2]:
-        *   Leave request process: Submit via HR Portal *at least 3 working days* before the leave date.
-    *   Context [3]: Access control (irrelevant).
-
-    *   *Part 1: Notice period for annual leave.*
-        *   Context [2] says: ""Nhân viên gửi yêu cầu nghỉ phép qua hệ thống HR Portal... ít nhất 3 ngày làm việc trước ngày nghỉ."" (Employees send leave requests via HR Portal... at least 3 working days before the leave date).
-    *   *Part 2: Comparison with sick leave documentation requirement.*
-        *   Sick leave documentation: Context [1] says ""Nếu nghỉ trên 3 ngày liên tiếp: Cần giấy tờ y tế từ bệnh viện."" (If off for more than 3 consecutive days: Medical documents from the hospital are required).
-        *   Comparison: Both involve the number ""3"", but one is ""at least 3 working days"" (notice period) and the other is ""more than 3 consecutive days"" (documentation requirement).
-
-    *   Nhân viên phải báo trước ít nhất 3 ngày làm việc để xin nghỉ phép [2].
-    *   Con số này giống với số ngày nghỉ ốm liên tiếp (trên 3 ngày) thì cần giấy tờ y tế [1].
-
-    *   Answer only from context? Yes.
-    *   Cite sources? Yes.
-    *   Short, clear, factual? Yes.
-    *   Same language? Yes.
-Nhân viên phải báo trước ít nhất 3 ngày làm việc để xin nghỉ phép [2]. Con số này giống với số ngày nghỉ ốm liên tiếp (trên 3 ngày) thì cần phải có giấy tờ y tế từ bệnh viện [1].",Nghỉ phép năm cần báo trước ít nhất 3 ngày làm việc qua HR Portal. Nghỉ ốm cũng liên quan đến mốc 3 ngày: nếu nghỉ TRÊN 3 ngày liên tiếp thì cần giấy tờ y tế từ bệnh viện. Hai con số '3 ngày' này áp dụng cho hai tình huống khác nhau.,1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),5,Retrieved: 1/1 expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),baseline_dense
-gq09,IT Helpdesk,"Mật khẩu tài khoản công ty cần đổi định kỳ không? Nếu có, hệ thống sẽ nhắc nhở trước bao nhiêu ngày và đổi qua đâu?","*   Question: ""Mật khẩu tài khoản công ty cần đổi định kỳ không? Nếu có, hệ thống sẽ nhắc nhở trước bao nhiêu ngày và đổi qua đâu?"" (Do company account passwords need to be changed periodically? If so, how many days in advance will the system remind, and where to change it?)
-    *   Constraint 1: Answer only from retrieved context.
-    *   Constraint 2: If insufficient, say ""do not know"".
-    *   Constraint 3: Cite source field in brackets [1].
-    *   Constraint 4: Short, clear, factual.
-    *   Constraint 5: Respond in the same language (Vietnamese).
-
-    *   [1] `support/helpdesk-faq.md`:
-        *   ""Mật khẩu cần thay đổi định kỳ không? A: Có. Mật khẩu phải được thay đổi mỗi 90 ngày. Hệ thống sẽ nhắc nhở 7 ngày trước khi hết hạn.""
-        *   ""Tôi quên mật khẩu, phải làm gì? A: Truy cập https://sso.company.internal/reset hoặc liên hệ Helpdesk qua ext. 9000.""
-    *   [2] `it/access-control-sop.md`: Discusses access review every 6 months. Not relevant to password change frequency/reminders.
-    *   [3] `hr/leave-policy-2026.pdf`: Discusses leave policy. Not relevant.
-
-    *   Need to change periodically? Yes (every 90 days).
-    *   Reminder period? 7 days before expiration.
-    *   Where to change? The context says for *forgotten* passwords, use `https://sso.company.internal/reset` or Helpdesk ext. 9000. It doesn't explicitly state the ""change"" path for periodic updates, but it mentions the SSO portal for resets. However, looking strictly at the text:
-        *   ""Mật khẩu cần thay đổi định kỳ không? A: Có. Mật khẩu phải được thay đổi mỗi 90 ngày. Hệ thống sẽ nhắc nhở 7 ngày trước khi hết hạn."" [1]
-        *   The ""where to change"" part isn't explicitly answered for *periodic* changes, only for *forgotten* passwords. But usually, the SSO portal is the place. Let's check if I can infer. The prompt says ""Answer only from the retrieved context"".
-        *   Context [1] says: ""Truy cập https://sso.company.internal/reset hoặc liên hệ Helpdesk qua ext. 9000"" for forgotten passwords.
-        *   Context [1] says: ""Để mở khóa... tự reset qua portal SSO.""
-        *   Strictly speaking, the context doesn't explicitly say ""To change your password periodically, go to X"". It only says where to go if you *forget* it or need to *reset* it.
-
-    *   *Self-Correction:* I should state what is explicitly there.
-    *   Periodic change: Yes, every 90 days [1].
-    *   Reminder: 7 days before expiration [1].
-    *   Where to change: The context mentions `https://sso.company.internal/reset` or Helpdesk ext. 9000 for forgotten passwords, and the SSO portal for unlocking/resetting [1]. I will mention these as the available options for password management.
-
-    *   Có, mật khẩu cần được thay đổi mỗi 90 ngày [1].
-    *   Hệ thống sẽ nhắc nhở trước 7 ngày khi hết hạn [1].
-    *   Về nơi thay đổi, tài liệu đề cập đến việc truy cập https://sso.company.internal/reset, liên hệ Helpdesk qua ext. 9000 hoặc sử dụng portal SSO (trong trường hợp quên mật khẩu hoặc mở khóa tài khoản) [1].
-
-    *   Short, clear, factual? Yes.
-    *   Citations included? Yes.
-    *   Only from context? Yes.
-    *   Language correct? Yes.
-Có, mật khẩu cần được thay đổi mỗi 90 ngày [1]. Hệ thống sẽ nhắc nhở trước 7 ngày khi hết hạn [1]. Để reset mật khẩu, người dùng có thể truy cập https://sso.company.internal/reset, liên hệ Helpdesk qua ext. 9000 hoặc sử dụng portal SSO [1].","Có. Mật khẩu phải được thay đổi mỗi 90 ngày. Hệ thống sẽ nhắc nhở 7 ngày trước khi hết hạn. Để đổi mật khẩu, truy cập https://sso.company.internal/reset hoặc liên hệ Helpdesk qua ext. 9000.",1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),5,Retrieved: 1/1 expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),baseline_dense
-gq10,Refund,Chính sách hoàn tiền hiện tại áp dụng cho đơn hàng đặt trước ngày 01/02/2026 không?,"*   Question: ""Chính sách hoàn tiền hiện tại áp dụng cho đơn hàng đặt trước ngày 01/02/2026 không?"" (Does the current refund policy apply to orders placed before February 1, 2026?)
-    *   Constraint 1: Answer only from retrieved context.
-    *   Constraint 2: If insufficient, say ""do not know"".
-    *   Constraint 3: Cite source field in brackets [1].
-    *   Constraint 4: Short, clear, factual.
-    *   Constraint 5: Respond in the same language (Vietnamese).
-
-    *   [1] states: ""Chính sách này áp dụng cho tất cả các đơn hàng được đặt trên hệ thống nội bộ kể từ ngày 01/02/2026. Các đơn hàng đặt trước ngày có hiệu lực sẽ áp dụng theo chính sách hoàn tiền phiên bản 3."" (This policy applies to all orders placed on the internal system from February 1, 2026. Orders placed before the effective date will apply according to refund policy version 3.)
-    *   [2] discusses conditions and exceptions.
-    *   [3] discusses refund methods.
-
-    *   The current policy (v4) applies from 01/02/2026.
-    *   Orders placed *before* 01/02/2026 apply to version 3 of the refund policy.
-    *   Therefore, the current policy (v4) does *not* apply to orders placed before 01/02/2026.
-
-    *   Không, chính sách này không áp dụng cho các đơn hàng đặt trước ngày 01/02/2026; các đơn hàng này sẽ áp dụng theo chính sách hoàn tiền phiên bản 3 [1].
-Không, chính sách này không áp dụng cho các đơn hàng đặt trước ngày 01/02/2026; các đơn hàng đặt trước ngày này sẽ áp dụng theo chính sách hoàn tiền phiên bản 3 [1].",Không. Chính sách hoàn tiền phiên bản 4 có hiệu lực từ ngày 01/02/2026 và chỉ áp dụng cho các đơn hàng được đặt kể từ ngày đó. Các đơn hàng đặt trước ngày này sẽ áp dụng theo chính sách hoàn tiền phiên bản 3.,1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),5,Retrieved: 1/1 expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),baseline_dense
-gq01,SLA,SLA xử lý ticket P1 đã thay đổi như thế nào so với phiên bản trước?,"*   Question: ""SLA xử lý ticket P1 đã thay đổi như thế nào so với phiên bản trước?"" (How has the P1 ticket resolution SLA changed compared to the previous version?)
-    *   Constraint 1: Answer only from retrieved context.
-    *   Constraint 2: If insufficient, say ""do not know"".
-    *   Constraint 3: Cite source field in brackets [1].
-    *   Constraint 4: Short, clear, factual.
-    *   Constraint 5: Respond in the same language (Vietnamese).
-
-    *   [1] mentions ""v2026.1 (2026-01-15): Cập nhật SLA P1 resolution từ 6 giờ xuống 4 giờ."" (Updated P1 resolution SLA from 6 hours to 4 hours).
-    *   [2] lists current P1 resolution as 4 hours.
-    *   [3] discusses tools and communication channels.
-
-    *   The change is specifically mentioned in [1].
-    *   The P1 resolution SLA was updated from 6 hours down to 4 hours.
-SLA xử lý (resolution) ticket P1 đã được cập nhật giảm từ 6 giờ xuống còn 4 giờ [1].","Phiên bản hiện tại (v2026.1, có hiệu lực từ 2026-01-15) đã cập nhật SLA P1 resolution từ 6 giờ xuống còn 4 giờ. Phiên bản trước (v2025.3) không thay đổi SLA này.",1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),5,Retrieved: 1/1 expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),variant_hybrid
-gq02,Cross-Document,"Khi làm việc remote, tôi phải dùng VPN và được kết nối trên tối đa bao nhiêu thiết bị?","*   Constraint 1: Answer only from the retrieved context.
-    *   Constraint 2: If insufficient, say ""I do not know"" and do not make up information.
-    *   Constraint 3: Cite source field in brackets (e.g., [1]).
-    *   Constraint 4: Keep answer short, clear, and factual.
-    *   Constraint 5: Respond in the same language as the question (Vietnamese).
-
-    *   Question: ""Khi làm việc remote, tôi phải dùng VPN và được kết nối trên tối đa bao nhiêu thiết bị?"" (When working remotely, I must use VPN and can be connected on how many devices maximum?)
-
-    *   [1] `support/helpdesk-faq.md`:
-        *   Mentions Cisco AnyConnect.
-        *   Mentions: ""VPN có giới hạn số thiết bị không? A: Mỗi tài khoản được kết nối VPN trên tối đa 2 thiết bị cùng lúc."" (Does VPN limit the number of devices? A: Each account can connect to VPN on a maximum of 2 devices at the same time.)
-    *   [2] `hr/leave-policy-2026.pdf`:
-        *   Mentions VPN is mandatory when working with internal systems.
-    *   [3] `support/helpdesk-faq.md`:
-        *   Discusses laptop issuance and damage.
-
-    *   The user asks about the maximum number of devices for VPN connection.
-    *   Source [1] explicitly states: ""Mỗi tài khoản được kết nối VPN trên tối đa 2 thiết bị cùng lúc.""
-
-    *   Answer: Mỗi tài khoản được kết nối VPN trên tối đa 2 thiết bị cùng lúc [1].
-Mỗi tài khoản được kết nối VPN trên tối đa 2 thiết bị cùng lúc [1].","Khi làm việc remote và truy cập hệ thống nội bộ, VPN là bắt buộc (theo HR Leave Policy). Phần mềm VPN là Cisco AnyConnect và mỗi tài khoản được kết nối VPN trên tối đa 2 thiết bị cùng lúc (theo IT Helpdesk FAQ).",1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),5,Retrieved: 2/2 expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),variant_hybrid
-gq03,Refund,Đơn hàng mua trong chương trình Flash Sale và đã kích hoạt sản phẩm có được hoàn tiền không?,"*   Question: ""Đơn hàng mua trong chương trình Flash Sale và đã kích hoạt sản phẩm có được hoàn tiền không?"" (Are orders bought during a Flash Sale and with activated products refundable?)
-    *   Constraint 1: Answer only from retrieved context.
-    *   Constraint 2: If insufficient, say ""do not know"".
-    *   Constraint 3: Cite source field in brackets (e.g., [1]).
-    *   Constraint 4: Keep answer short, clear, and factual.
-    *   Constraint 5: Respond in the same language as the question (Vietnamese).
-
-    *   [1] policy/refund-v4.pdf | Điều 3: Điều kiện áp dụng và ngoại lệ.
-        *   Lists ""Ngoại lệ không được hoàn tiền"" (Exceptions not eligible for refund):
-            *   Digital products.
-            *   Orders with special discount codes from Flash Sale programs.
-            *   Products that have been activated or accounts registered.
-    *   [2] policy/refund-v4.pdf | Điều 1: Scope of application.
-    *   [3] policy/refund-v4.pdf | Điều 5: Refund methods.
-
-    *   The question asks about orders that are *both* from a Flash Sale *and* have been activated.
-    *   Context [1] explicitly states that orders applying Flash Sale discount codes AND products that have been activated are exceptions that are *not* eligible for a refund.
-
-    *   Draft: Đơn hàng mua trong chương trình Flash Sale và sản phẩm đã được kích hoạt không được hoàn tiền [1].
-Đơn hàng mua trong chương trình Flash Sale và sản phẩm đã được kích hoạt không được hoàn tiền [1].",Không được hoàn tiền. Đơn hàng rơi vào hai ngoại lệ cùng lúc: (1) đơn hàng áp dụng mã giảm giá chương trình Flash Sale và (2) sản phẩm đã được kích hoạt - cả hai đều thuộc danh sách ngoại lệ không được hoàn tiền theo Điều 3 của chính sách.,1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),5,Retrieved: 1/1 expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),variant_hybrid
-gq04,Refund,"Nếu chọn nhận store credit thay vì hoàn tiền, tôi được bao nhiêu phần trăm so với số tiền gốc?","*   Question: ""Nếu chọn nhận store credit thay vì hoàn tiền, tôi được bao nhiêu phần trăm so với số tiền gốc?"" (If I choose store credit instead of a refund, what percentage of the original amount do I get?)
-    *   Constraint 1: Answer only from retrieved context.
-    *   Constraint 2: If insufficient, say ""I don't know"".
-    *   Constraint 3: Cite source field in brackets [1].
-    *   Constraint 4: Keep answer short, clear, and factual.
-    *   Constraint 5: Respond in the same language as the question (Vietnamese).
-
-    *   [1] mentions: ""Hoàn tiền qua credit nội bộ (store credit): khách hàng có thể chọn nhận store credit thay thế với giá trị 110% so với số tiền hoàn."" (Refund via internal credit (store credit): customers can choose to receive replacement store credit with a value of 110% compared to the refund amount.)
-    *   [2] discusses conditions and exceptions.
-    *   [3] discusses the process.
-
-    *   The answer is 110%.
-    *   Source is [1].
-
-    *   Nếu chọn nhận store credit, bạn sẽ nhận được giá trị 110% so với số tiền hoàn [1].
-Nếu chọn nhận store credit, bạn sẽ nhận được giá trị 110% so với số tiền hoàn [1].","Khách hàng có thể chọn nhận store credit (credit nội bộ) thay thế với giá trị 110% so với số tiền hoàn gốc. Đây là tùy chọn, không phải bắt buộc.",1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),5,Retrieved: 1/1 expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),variant_hybrid
-gq05,Access Control,"Contractor từ bên ngoài công ty có thể được cấp quyền Admin Access không? Nếu có, cần bao nhiêu ngày và có yêu cầu đặc biệt gì?","*   Question: ""Contractor từ bên ngoài công ty có thể được cấp quyền Admin Access không? Nếu có, cần bao nhiêu ngày và có yêu cầu đặc biệt gì?"" (Can external contractors be granted Admin Access? If yes, how many days are needed and are there any special requirements?)
-    *   Constraint: Answer *only* from the retrieved context. If insufficient, say ""I don't know"". Cite sources. Keep it short, clear, and factual. Respond in Vietnamese.
-
-    *   [1] `it/access-control-sop.md` Section 3: Request process (Jira ticket, Line Manager approval, IT Admin check, IT Security review, email notification).
-    *   [2] `it/access-control-sop.md` Section 2: Access levels.
-        *   Level 1: New employees (first 30 days).
-        *   Level 2: Official employees after probation.
-        *   Level 3: Team Lead, Senior Engineer, Manager.
-        *   Level 4 (Admin Access): DevOps, SRE, IT Admin. Processing time: 5 working days. Additional requirement: Mandatory security policy training.
-    *   [3] `hr/leave-policy-2026.pdf`: Leave policy (irrelevant).
-
-    *   Does the text mention ""Contractor từ bên ngoài công ty"" (External contractors)?
-        *   Looking at [2], Level 4 (Admin Access) applies to ""DevOps, SRE, IT Admin"". It doesn't explicitly mention contractors.
-        *   Looking at Level 1, it mentions ""Tất cả nhân viên mới"" (All new employees).
-        *   Looking at Level 2, it mentions ""Nhân viên chính thức"" (Official employees).
-    *   Is there any mention of external contractors in any of the provided sections? No.
-
-    *   The context does not mention whether external contractors can be granted Admin Access.
-    *   Therefore, I must state that I do not know based on the provided context.
-Tôi không biết vì thông tin trong ngữ cảnh không đề cập đến việc contractor từ bên ngoài công ty có thể được cấp quyền Admin Access hay không.","Có. Theo Access Control SOP, quy trình áp dụng cho tất cả nhân viên, contractor và third-party vendor. Admin Access (Level 4) cần phê duyệt từ IT Manager và CISO, thời gian xử lý 5 ngày làm việc, và có yêu cầu thêm: training bắt buộc về security policy.",1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),5,Retrieved: 1/1 expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),variant_hybrid
-gq06,Cross-Document,"Lúc 2 giờ sáng xảy ra sự cố P1, on-call engineer cần cấp quyền tạm thời cho một engineer xử lý incident. Quy trình cụ thể như thế nào và quyền này tồn tại bao lâu?","*   Question: ""Lúc 2 giờ sáng xảy ra sự cố P1, on-call engineer cần cấp quyền tạm thời cho một engineer xử lý incident. Quy trình cụ thể như thế nào và quyền này tồn tại bao lâu?"" (At 2 AM a P1 incident occurs, the on-call engineer needs to grant temporary access to an engineer to handle the incident. What is the specific process and how long does this access last?)
-    *   Constraint 1: Answer only from retrieved context.
-    *   Constraint 2: If insufficient, say ""do not know"".
-    *   Constraint 3: Cite source field in brackets [1].
-    *   Constraint 4: Short, clear, factual.
-    *   Constraint 5: Respond in the same language (Vietnamese).
-
-    *   [1] `it/access-control-sop.md`: Discusses escalation for system permission changes. Specifically mentions P1 incidents and temporary access.
-        *   Process: On-call IT Admin can grant temporary access after verbal approval from Tech Lead.
-        *   Duration: Max 24 hours.
-        *   Post-action: After 24 hours, a formal ticket is needed or access is automatically revoked.
-        *   Logging: Must be logged in Security Audit system.
-    *   [2] `support/sla-p1-2026.pdf`: Discusses P1 incident handling steps (Reception, Notification, Triage, Handling, Resolution). No mention of specific permission granting process.
-    *   [3] `support/sla-p1-2026.pdf`: Discusses SLAs for P1, P2, P3, P4. No mention of permission granting process.
-
-    *   Process: On-call IT Admin grants temporary access after verbal approval from Tech Lead [1].
-    *   Duration: Maximum 24 hours [1].
-    *   Additional details: After 24 hours, a formal ticket is required or access is automatically revoked, and all temporary access must be logged in the Security Audit system [1].
-Quy trình cấp quyền tạm thời trong sự cố P1 như sau:
-- On-call IT Admin có thể cấp quyền tạm thời sau khi được Tech Lead phê duyệt bằng lời [1].
-- Mọi quyền tạm thời phải được ghi log vào hệ thống Security Audit [1].
-
-Quyền này tồn tại tối đa 24 giờ; sau thời gian này, quyền sẽ bị thu hồi tự động hoặc phải có ticket chính thức [1].","On-call IT Admin có thể cấp quyền tạm thời (tối đa 24 giờ) sau khi được Tech Lead phê duyệt bằng lời. Sau 24 giờ, phải có ticket chính thức hoặc quyền bị thu hồi tự động. Mọi quyền tạm thời phải được ghi log vào hệ thống Security Audit. Liên hệ on-call qua hotline ext. 9999 (24/7) theo SLA P1.",1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),5,Retrieved: 2/2 expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),variant_hybrid
-gq07,Insufficient Context,Công ty sẽ phạt bao nhiêu nếu team IT vi phạm cam kết SLA P1?,"*   Question: ""Công ty sẽ phạt bao nhiêu nếu team IT vi phạm cam kết SLA P1?"" (How much will the company fine if the IT team violates the P1 SLA commitment?)
-    *   Constraint 1: Answer only from the retrieved context.
-    *   Constraint 2: If insufficient, say ""I do not know"" and do not make up information.
-    *   Constraint 3: Cite source field in brackets [1].
-    *   Constraint 4: Keep answer short, clear, and factual.
-    *   Constraint 5: Respond in the same language as the question (Vietnamese).
-
-    *   [1] `support/sla-p1-2026.pdf`: Mentions version history. v2026.1 updated P1 resolution from 6 hours to 4 hours. No mention of fines/penalties.
-    *   [2] `support/helpdesk-faq.md`: Discusses laptop issuance and reporting broken laptops. No mention of SLA P1 fines.
-    *   [3] `support/helpdesk-faq.md`: Discusses software installation and license renewal. No mention of SLA P1 fines.
-
-    *   The context mentions the resolution time for SLA P1 (4 hours in v2026.1), but it does *not* mention any fines or penalties for violating it.
-Tôi không biết.","Tài liệu hiện có không quy định mức phạt hay hình thức xử lý khi vi phạm SLA P1. Tài liệu sla-p1-2026.pdf chỉ mô tả quy trình xử lý và SLA target, không có điều khoản về penalty.",1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),,No expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),variant_hybrid
-gq08,HR Policy,Nhân viên phải báo trước bao nhiêu ngày để xin nghỉ phép năm? Con số này có giống với số ngày cần giấy tờ khi nghỉ ốm không?,"*   Question: ""Nhân viên phải báo trước bao nhiêu ngày để xin nghỉ phép năm? Con số này có giống với số ngày cần giấy tờ khi nghỉ ốm không?"" (How many days in advance must an employee notify for annual leave? Is this number the same as the number of days requiring documentation for sick leave?)
-    *   Constraint 1: Answer only from retrieved context.
-    *   Constraint 2: If insufficient, say ""I don't know"".
-    *   Constraint 3: Cite source field in brackets [1].
-    *   Constraint 4: Short, clear, factual.
-    *   Constraint 5: Respond in the same language (Vietnamese).
-
-    *   Context [1]:
-        *   Annual Leave (1.1): Mentions number of days based on experience and carry-over. No mention of notice period.
-        *   Sick Leave (1.2): Notify Line Manager before 9:00 AM on the day of leave. If off for *more than 3 consecutive days*, medical documents are required.
-    *   Context [2]:
-        *   Leave request process (Step 1): Employees send requests via HR Portal *at least 3 working days* before the leave date.
-    *   Context [3]: Access control (irrelevant).
-
-    *   *Part 1: Notice period for annual leave.*
-        *   Context [2] says: ""ít nhất 3 ngày làm việc trước ngày nghỉ"" (at least 3 working days before the leave date).
-    *   *Part 2: Comparison with sick leave documentation requirement.*
-        *   Sick leave documentation is required if off for ""trên 3 ngày liên tiếp"" (more than 3 consecutive days) [1].
-        *   The number for annual leave notice is ""3 ngày làm việc"" (3 working days).
-        *   The number for sick leave documentation is ""trên 3 ngày liên tiếp"" (more than 3 consecutive days).
-        *   Are they the same? Technically, both involve the number 3, but one is a notice period (3 working days) and the other is a threshold for documentation (more than 3 consecutive days).
-
-    *   Nhân viên phải báo trước ít nhất 3 ngày làm việc để xin nghỉ phép [2].
-    *   Con số này giống với số ngày quy định cần giấy tờ y tế khi nghỉ ốm (là trên 3 ngày liên tiếp) [1]. (Wait, ""3"" is the same digit, but the condition is ""more than 3""). Let's be precise.
-
-    *   Notice for leave: at least 3 working days [2].
-    *   Sick leave docs: more than 3 consecutive days [1].
-    *   Comparison: Both involve the number 3.
-
-    *   Nhân viên phải báo trước ít nhất 3 ngày làm việc để xin nghỉ phép [2]. Con số này giống với số ngày quy định cần giấy tờ y tế khi nghỉ ốm (trên 3 ngày liên tiếp) [1].
-Nhân viên phải báo trước ít nhất 3 ngày làm việc để xin nghỉ phép [2]. Con số này giống với số ngày quy định cần giấy tờ y tế khi nghỉ ốm (trên 3 ngày liên tiếp) [1].",Nghỉ phép năm cần báo trước ít nhất 3 ngày làm việc qua HR Portal. Nghỉ ốm cũng liên quan đến mốc 3 ngày: nếu nghỉ TRÊN 3 ngày liên tiếp thì cần giấy tờ y tế từ bệnh viện. Hai con số '3 ngày' này áp dụng cho hai tình huống khác nhau.,1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),5,Retrieved: 1/1 expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),variant_hybrid
-gq09,IT Helpdesk,"Mật khẩu tài khoản công ty cần đổi định kỳ không? Nếu có, hệ thống sẽ nhắc nhở trước bao nhiêu ngày và đổi qua đâu?","*   Question: ""Mật khẩu tài khoản công ty cần đổi định kỳ không? Nếu có, hệ thống sẽ nhắc nhở trước bao nhiêu ngày và đổi qua đâu?"" (Do company account passwords need to be changed periodically? If so, how many days in advance will the system remind, and where to change it?)
-    *   Constraint 1: Answer only from retrieved context.
-    *   Constraint 2: If insufficient, say ""do not know"".
-    *   Constraint 3: Cite source field in brackets [1].
-    *   Constraint 4: Short, clear, factual.
-    *   Constraint 5: Respond in the same language (Vietnamese).
-
-    *   [1] `support/helpdesk-faq.md`:
-        *   ""Q: Mật khẩu cần thay đổi định kỳ không? A: Có. Mật khẩu phải được thay đổi mỗi 90 ngày. Hệ thống sẽ nhắc nhở 7 ngày trước khi hết hạn.""
-        *   ""Q: Tôi quên mật khẩu, phải làm gì? A: Truy cập https://sso.company.internal/reset hoặc liên hệ Helpdesk qua ext. 9000.""
-    *   [2] `hr/leave-policy-2026.pdf`: Leave policy (irrelevant).
-    *   [3] `support/helpdesk-faq.md`: Hardware/Laptop (irrelevant).
-
-    *   Need to change periodically? Yes, every 90 days [1].
-    *   Reminder period? 7 days before expiration [1].
-    *   Where to change? The context says for *forgotten* passwords, use `https://sso.company.internal/reset` or Helpdesk ext. 9000 [1]. However, it doesn't explicitly state the specific URL for *periodic* changes, but it mentions the SSO portal for resetting/unlocking. Let's look closer.
-    *   Wait, the question asks ""đổi qua đâu"" (where to change). The context mentions `https://sso.company.internal/reset` for forgotten passwords and ""portal SSO"" for unlocking. It doesn't explicitly give a separate ""change password"" link for periodic updates, but the SSO portal is the implied location for password management. However, strictly following ""Answer only from retrieved context"", I should mention what is there.
-
-    *   Mật khẩu cần thay đổi định kỳ mỗi 90 ngày [1].
-    *   Hệ thống sẽ nhắc nhở trước 7 ngày khi hết hạn [1].
-    *   (Regarding where to change): The context mentions `https://sso.company.internal/reset` for forgotten passwords and the SSO portal for unlocking [1].
-
-    *   Có, mật khẩu cần được thay đổi mỗi 90 ngày [1]. Hệ thống sẽ nhắc nhở trước 7 ngày khi hết hạn [1]. Về nơi thay đổi, tài liệu đề cập đến việc reset mật khẩu tại https://sso.company.internal/reset hoặc qua portal SSO [1].
-
-    *   Short? Yes.
-    *   Clear? Yes.
-    *   Factual? Yes.
-    *   Citations? Yes.
-    *   Language? Vietnamese.
-Có, mật khẩu cần được thay đổi mỗi 90 ngày [1]. Hệ thống sẽ nhắc nhở trước 7 ngày khi hết hạn [1]. Để reset mật khẩu, người dùng có thể truy cập https://sso.company.internal/reset hoặc thực hiện qua portal SSO [1].","Có. Mật khẩu phải được thay đổi mỗi 90 ngày. Hệ thống sẽ nhắc nhở 7 ngày trước khi hết hạn. Để đổi mật khẩu, truy cập https://sso.company.internal/reset hoặc liên hệ Helpdesk qua ext. 9000.",1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),5,Retrieved: 1/1 expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),variant_hybrid
-gq10,Refund,Chính sách hoàn tiền hiện tại áp dụng cho đơn hàng đặt trước ngày 01/02/2026 không?,"*   Question: ""Chính sách hoàn tiền hiện tại áp dụng cho đơn hàng đặt trước ngày 01/02/2026 không?"" (Does the current refund policy apply to orders placed before February 1, 2026?)
-    *   Constraint 1: Answer only from retrieved context.
-    *   Constraint 2: If insufficient, say ""do not know"".
-    *   Constraint 3: Cite source field in brackets [1].
-    *   Constraint 4: Short, clear, factual.
-    *   Constraint 5: Respond in the same language (Vietnamese).
-
-    *   [1] states: ""Chính sách này áp dụng cho tất cả các đơn hàng được đặt trên hệ thống nội bộ kể từ ngày 01/02/2026. Các đơn hàng đặt trước ngày có hiệu lực sẽ áp dụng theo chính sách hoàn tiền phiên bản 3."" (This policy applies to all orders placed on the internal system from February 1, 2026. Orders placed before the effective date will apply according to refund policy version 3.)
-    *   [2] discusses conditions and exceptions.
-    *   [3] discusses refund methods.
-
-    *   The current policy (v4) applies from 01/02/2026.
-    *   Orders placed *before* 01/02/2026 apply to version 3 of the refund policy.
-    *   Therefore, the current policy (v4) does *not* apply to orders placed before 01/02/2026.
-
-    *   Không, chính sách này không áp dụng cho các đơn hàng đặt trước ngày 01/02/2026; các đơn hàng này sẽ áp dụng theo chính sách hoàn tiền phiên bản 3 [1].
-Không, chính sách này không áp dụng cho các đơn hàng đặt trước ngày 01/02/2026; các đơn hàng đặt trước ngày này sẽ áp dụng theo chính sách hoàn tiền phiên bản 3 [1].",Không. Chính sách hoàn tiền phiên bản 4 có hiệu lực từ ngày 01/02/2026 và chỉ áp dụng cho các đơn hàng được đặt kể từ ngày đó. Các đơn hàng đặt trước ngày này sẽ áp dụng theo chính sách hoàn tiền phiên bản 3.,1,Evaluation error: Expecting value: line 1 column 1 (char 0),1,Evaluation error: Expecting value: line 1 column 1 (char 0),5,Retrieved: 1/1 expected sources,1,Evaluation error: Expecting value: line 1 column 1 (char 0),variant_hybrid
+gq01,SLA,SLA xử lý ticket P1 đã thay đổi như thế nào so với phiên bản trước?,SLA xử lý (resolution) ticket P1 đã thay đổi từ 6 giờ xuống còn 4 giờ [1].,"Phiên bản hiện tại (v2026.1, có hiệu lực từ 2026-01-15) đã cập nhật SLA P1 resolution từ 6 giờ xuống còn 4 giờ. Phiên bản trước (v2025.3) không thay đổi SLA này.",5,"The answer is completely grounded in the provided context. The information regarding the change from 6 hours to 4 hours for P1 resolution is explicitly stated in the first chunk, and the citation [1] correctly points to that source.",5,The answer directly addresses the user's query by providing the specific change in SLA time for P1 tickets compared to the previous version.,5,Retrieved: 1/1 expected sources,3,"The model correctly identifies the change in SLA time (6 hours to 4 hours) but fails to mention the specific version numbers (v2026.1 and v2025.3) and the effective date, which were key components of the expected answer.",baseline_dense
+gq02,Cross-Document,"Khi làm việc remote, tôi phải dùng VPN và được kết nối trên tối đa bao nhiêu thiết bị?","Khi làm việc remote, bạn bắt buộc phải sử dụng VPN khi truy cập vào hệ thống nội bộ [2]. Mỗi tài khoản được kết nối VPN trên tối đa 2 thiết bị cùng lúc [1].","Khi làm việc remote và truy cập hệ thống nội bộ, VPN là bắt buộc (theo HR Leave Policy). Phần mềm VPN là Cisco AnyConnect và mỗi tài khoản được kết nối VPN trên tối đa 2 thiết bị cùng lúc (theo IT Helpdesk FAQ).",5,"The answer is completely grounded in the provided context. The first sentence is supported by chunk 2 ('Kết nối VPN bắt buộc khi làm việc với hệ thống nội bộ'), and the second sentence is supported by chunk 1 ('Mỗi tài khoản được kết nối VPN trên tối đa 2 thiết bị cùng lúc').",5,The answer directly addresses both parts of the user's query (requirement to use VPN and the maximum number of devices allowed) with specific information.,5,Retrieved: 2/2 expected sources,5,"The model answer covers all key points: it confirms the mandatory use of VPN for remote work and correctly specifies the limit of 2 devices per account. While it omits the specific names of the policy/FAQ documents, it accurately conveys the required information.",baseline_dense
+gq03,Refund,Đơn hàng mua trong chương trình Flash Sale và đã kích hoạt sản phẩm có được hoàn tiền không?,"Không được hoàn tiền. Theo chính sách, các đơn hàng đã áp dụng mã giảm giá Flash Sale hoặc sản phẩm đã được kích hoạt đều thuộc các trường hợp ngoại lệ không được hoàn tiền [1].",Không được hoàn tiền. Đơn hàng rơi vào hai ngoại lệ cùng lúc: (1) đơn hàng áp dụng mã giảm giá chương trình Flash Sale và (2) sản phẩm đã được kích hoạt - cả hai đều thuộc danh sách ngoại lệ không được hoàn tiền theo Điều 3 của chính sách.,5,The answer is fully supported by the provided context. It correctly identifies the specific exceptions mentioned in the retrieved chunks (Flash Sale discount and activated products) as reasons for the denial of a refund.,5,Câu trả lời trực tiếp giải quyết cả hai khía cạnh trong câu hỏi của người dùng (đơn hàng Flash Sale và sản phẩm đã kích hoạt) và đưa ra kết luận rõ ràng dựa trên chính sách.,5,Retrieved: 1/1 expected sources,4,"The model answer correctly identifies that the order is not refundable. However, it uses the word 'hoặc' (or) instead of 'và' (and), which slightly misrepresents the logic that the order falls into both exceptions simultaneously as stated in the ground truth.",baseline_dense
+gq04,Refund,"Nếu chọn nhận store credit thay vì hoàn tiền, tôi được bao nhiêu phần trăm so với số tiền gốc?","Nếu chọn nhận store credit thay vì hoàn tiền, bạn sẽ nhận được 110% giá trị so với số tiền gốc [1].","Khách hàng có thể chọn nhận store credit (credit nội bộ) thay thế với giá trị 110% so với số tiền hoàn gốc. Đây là tùy chọn, không phải bắt buộc.",5,"The answer is completely grounded in the provided context. The information regarding the 110% value for store credit is explicitly stated in the first chunk, and the citation [1] correctly points to this source.",5,The answer directly and clearly addresses the user's question by providing the specific percentage (110%) offered for store credit compared to the original refund amount.,5,Retrieved: 1/1 expected sources,4,"The model answer correctly identifies the 110% value, but it misses the explicit clarification that this is an optional choice rather than a mandatory policy.",baseline_dense
+gq05,Access Control,"Contractor từ bên ngoài công ty có thể được cấp quyền Admin Access không? Nếu có, cần bao nhiêu ngày và có yêu cầu đặc biệt gì?","ERROR: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 41.623572836s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 41
+}
+]","Có. Theo Access Control SOP, quy trình áp dụng cho tất cả nhân viên, contractor và third-party vendor. Admin Access (Level 4) cần phê duyệt từ IT Manager và CISO, thời gian xử lý 5 ngày làm việc, và có yêu cầu thêm: training bắt buộc về security policy.",1,"The provided context is empty, and the answer is an error message indicating a system failure rather than a response derived from retrieved information.",1,"Evaluation error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 39.817868725s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 39
+}
+]",0,Retrieved: 0/1 expected sources. Missing: ['it/access-control-sop.md'],1,"Evaluation error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 39.616243183s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 39
+}
+]",baseline_dense
+gq06,Cross-Document,"Lúc 2 giờ sáng xảy ra sự cố P1, on-call engineer cần cấp quyền tạm thời cho một engineer xử lý incident. Quy trình cụ thể như thế nào và quyền này tồn tại bao lâu?","ERROR: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 35.537262331s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 35
+}
+]","On-call IT Admin có thể cấp quyền tạm thời (tối đa 24 giờ) sau khi được Tech Lead phê duyệt bằng lời. Sau 24 giờ, phải có ticket chính thức hoặc quyền bị thu hồi tự động. Mọi quyền tạm thời phải được ghi log vào hệ thống Security Audit. Liên hệ on-call qua hotline ext. 9999 (24/7) theo SLA P1.",1,"The provided context is empty, and the answer is an API error message rather than a response derived from any source material.",1,"Evaluation error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 33.876685894s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 33
+}
+]",0,"Retrieved: 0/2 expected sources. Missing: ['it/access-control-sop.md', 'support/sla-p1-2026.pdf']",1,"Evaluation error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 33.66416356s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 33
+}
+]",baseline_dense
+gq07,Insufficient Context,Công ty sẽ phạt bao nhiêu nếu team IT vi phạm cam kết SLA P1?,"ERROR: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 30.265248944s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 30
+}
+]","Tài liệu hiện có không quy định mức phạt hay hình thức xử lý khi vi phạm SLA P1. Tài liệu sla-p1-2026.pdf chỉ mô tả quy trình xử lý và SLA target, không có điều khoản về penalty.",1,"Evaluation error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 30.073842308s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 30
+}
+]",1,The answer is a technical error message regarding API rate limits and does not contain any information related to the user's query about SLA penalties.,,No expected sources,1,The model failed to provide an answer due to a technical error (quota exceeded). It did not address the query or provide any information regarding the SLA penalty.,baseline_dense
+gq08,HR Policy,Nhân viên phải báo trước bao nhiêu ngày để xin nghỉ phép năm? Con số này có giống với số ngày cần giấy tờ khi nghỉ ốm không?,"Nhân viên phải gửi yêu cầu nghỉ phép năm ít nhất 3 ngày làm việc trước ngày nghỉ [2].
+
+Con số này không giống với số ngày cần giấy tờ khi nghỉ ốm; đối với nghỉ ốm, nhân viên chỉ cần giấy tờ y tế từ bệnh viện nếu nghỉ trên 3 ngày liên tiếp [1].",Nghỉ phép năm cần báo trước ít nhất 3 ngày làm việc qua HR Portal. Nghỉ ốm cũng liên quan đến mốc 3 ngày: nếu nghỉ TRÊN 3 ngày liên tiếp thì cần giấy tờ y tế từ bệnh viện. Hai con số '3 ngày' này áp dụng cho hai tình huống khác nhau.,5,The answer is completely grounded in the provided context. It accurately cites the requirement for submitting leave requests at least 3 days in advance (from chunk 2) and correctly distinguishes this from the medical certificate requirement for sick leave exceeding 3 consecutive days (from chunk 1).,5,The answer directly addresses both parts of the user's query: it specifies the notice period for annual leave and clarifies that the requirements for sick leave (medical documentation) are different and based on a different threshold.,5,Retrieved: 1/1 expected sources,5,"The model answer covers all key points: it correctly identifies the 3-day notice period for annual leave, clarifies the distinction regarding the 3-day threshold for medical documentation in case of sick leave, and explicitly states that the two scenarios are different.",baseline_dense
+gq09,IT Helpdesk,"Mật khẩu tài khoản công ty cần đổi định kỳ không? Nếu có, hệ thống sẽ nhắc nhở trước bao nhiêu ngày và đổi qua đâu?","Có, mật khẩu cần được thay đổi định kỳ mỗi 90 ngày [1]. Hệ thống sẽ nhắc nhở 7 ngày trước khi hết hạn [1]. Tuy nhiên, tài liệu không nêu rõ địa chỉ cụ thể để thực hiện việc đổi mật khẩu định kỳ [1].","Có. Mật khẩu phải được thay đổi mỗi 90 ngày. Hệ thống sẽ nhắc nhở 7 ngày trước khi hết hạn. Để đổi mật khẩu, truy cập https://sso.company.internal/reset hoặc liên hệ Helpdesk qua ext. 9000.",5,"The answer is completely grounded in the provided context. It accurately cites the 90-day requirement and the 7-day reminder policy from the first chunk. The statement regarding the lack of specific instructions for 'periodic' password changes is also correct, as the provided text only mentions the reset process for forgotten passwords, not a specific portal for proactive periodic changes.",5,"Câu trả lời giải quyết đầy đủ cả 3 ý trong câu hỏi của người dùng: xác nhận việc đổi mật khẩu định kỳ, thời gian nhắc nhở và làm rõ việc tài liệu không cung cấp thông tin về nơi thực hiện đổi mật khẩu.",5,Retrieved: 1/1 expected sources,3,"The model correctly identified the frequency of password changes (90 days) and the notification period (7 days). However, it failed to provide the instructions for where to change the password (the URL and Helpdesk contact), incorrectly stating that the information was missing from the source.",baseline_dense
+gq10,Refund,Chính sách hoàn tiền hiện tại áp dụng cho đơn hàng đặt trước ngày 01/02/2026 không?,"Không, chính sách này không áp dụng cho các đơn hàng đặt trước ngày 01/02/2026. Các đơn hàng này sẽ áp dụng theo chính sách hoàn tiền phiên bản 3 [1].",Không. Chính sách hoàn tiền phiên bản 4 có hiệu lực từ ngày 01/02/2026 và chỉ áp dụng cho các đơn hàng được đặt kể từ ngày đó. Các đơn hàng đặt trước ngày này sẽ áp dụng theo chính sách hoàn tiền phiên bản 3.,5,The answer is completely grounded in the provided context. It accurately reflects the information in the first chunk regarding the effective date of the policy and the handling of orders placed before that date.,5,"Câu trả lời trực tiếp giải đáp thắc mắc của người dùng, xác nhận chính sách không áp dụng và cung cấp thông tin về chính sách thay thế một cách rõ ràng.",5,Retrieved: 1/1 expected sources,5,"The model answer accurately addresses the query, confirms that the policy does not apply to orders before the specified date, and correctly identifies that version 3 applies instead. It covers all key information provided in the ground truth.",baseline_dense
+gq01,SLA,SLA xử lý ticket P1 đã thay đổi như thế nào so với phiên bản trước?,ERROR: No module named 'rank_bm25',"Phiên bản hiện tại (v2026.1, có hiệu lực từ 2026-01-15) đã cập nhật SLA P1 resolution từ 6 giờ xuống còn 4 giờ. Phiên bản trước (v2025.3) không thay đổi SLA này.",1,"The provided context is empty, yet the answer provides a specific technical error message regarding a missing Python module, which is information not present in the context.",1,The answer is an error message related to a technical failure in the system and does not provide any information regarding the SLA query.,0,Retrieved: 0/1 expected sources. Missing: ['support/sla-p1-2026.pdf'],1,"Evaluation error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 51.644555853s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 51
+}
+]",variant_hybrid
+gq02,Cross-Document,"Khi làm việc remote, tôi phải dùng VPN và được kết nối trên tối đa bao nhiêu thiết bị?",ERROR: No module named 'rank_bm25',"Khi làm việc remote và truy cập hệ thống nội bộ, VPN là bắt buộc (theo HR Leave Policy). Phần mềm VPN là Cisco AnyConnect và mỗi tài khoản được kết nối VPN trên tối đa 2 thiết bị cùng lúc (theo IT Helpdesk FAQ).",1,"Evaluation error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 48.195186321s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 48
+}
+]",1,"Evaluation error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 48.036750667s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 48
+}
+]",0,"Retrieved: 0/2 expected sources. Missing: ['hr/leave-policy-2026.pdf', 'support/helpdesk-faq.md']",1,"The model failed to provide an answer and instead returned a technical error message, missing all key points of the expected answer.",variant_hybrid
+gq03,Refund,Đơn hàng mua trong chương trình Flash Sale và đã kích hoạt sản phẩm có được hoàn tiền không?,ERROR: No module named 'rank_bm25',Không được hoàn tiền. Đơn hàng rơi vào hai ngoại lệ cùng lúc: (1) đơn hàng áp dụng mã giảm giá chương trình Flash Sale và (2) sản phẩm đã được kích hoạt - cả hai đều thuộc danh sách ngoại lệ không được hoàn tiền theo Điều 3 của chính sách.,1,"Evaluation error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 41.715820842s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 41
+}
+]",1,The answer is a technical error message unrelated to the user's query about refund policies for Flash Sale products.,0,Retrieved: 0/1 expected sources. Missing: ['policy/refund-v4.pdf'],1,"Evaluation error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 40.127236516s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 40
+}
+]",variant_hybrid
+gq04,Refund,"Nếu chọn nhận store credit thay vì hoàn tiền, tôi được bao nhiêu phần trăm so với số tiền gốc?",ERROR: No module named 'rank_bm25',"Khách hàng có thể chọn nhận store credit (credit nội bộ) thay thế với giá trị 110% so với số tiền hoàn gốc. Đây là tùy chọn, không phải bắt buộc.",1,"Evaluation error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 36.692984468s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 36
+}
+]",1,"Evaluation error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 36.522692668s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 36
+}
+]",0,Retrieved: 0/1 expected sources. Missing: ['policy/refund-v4.pdf'],1,"The model failed to provide an answer and instead returned a technical error message, missing all information regarding the 110% store credit policy.",variant_hybrid
+gq05,Access Control,"Contractor từ bên ngoài công ty có thể được cấp quyền Admin Access không? Nếu có, cần bao nhiêu ngày và có yêu cầu đặc biệt gì?",ERROR: No module named 'rank_bm25',"Có. Theo Access Control SOP, quy trình áp dụng cho tất cả nhân viên, contractor và third-party vendor. Admin Access (Level 4) cần phê duyệt từ IT Manager và CISO, thời gian xử lý 5 ngày làm việc, và có yêu cầu thêm: training bắt buộc về security policy.",1,"Evaluation error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 31.165804729s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 31
+}
+]",1,"Evaluation error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 30.974821322s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 30
+}
+]",0,Retrieved: 0/1 expected sources. Missing: ['it/access-control-sop.md'],1,"Evaluation error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 30.777819551s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 30
+}
+]",variant_hybrid
+gq06,Cross-Document,"Lúc 2 giờ sáng xảy ra sự cố P1, on-call engineer cần cấp quyền tạm thời cho một engineer xử lý incident. Quy trình cụ thể như thế nào và quyền này tồn tại bao lâu?",ERROR: No module named 'rank_bm25',"On-call IT Admin có thể cấp quyền tạm thời (tối đa 24 giờ) sau khi được Tech Lead phê duyệt bằng lời. Sau 24 giờ, phải có ticket chính thức hoặc quyền bị thu hồi tự động. Mọi quyền tạm thời phải được ghi log vào hệ thống Security Audit. Liên hệ on-call qua hotline ext. 9999 (24/7) theo SLA P1.",1,"Evaluation error: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.1-flash-lite
+Please retry in 27.251855745s. [links {
+  description: ""Learn more about Gemini API quotas""
+  url: ""https://ai.google.dev/gemini-api/docs/rate-limits""
+}
+, violations {
+  quota_metric: ""generativelanguage.googleapis.com/generate_content_free_tier_requests""
+  quota_id: ""GenerateRequestsPerMinutePerProjectPerModel-FreeTier""
+  quota_dimensions {
+    key: ""model""
+    value: ""gemini-3.1-flash-lite""
+  }
+  quota_dimensions {
+    key: ""location""
+    value: ""global""
+  }
+  quota_value: 15
+}
+, retry_delay {
+  seconds: 27
+}
+]",1,The answer is an error message from a Python library and does not address the user's query about incident response procedures at all.,0,"Retrieved: 0/2 expected sources. Missing: ['it/access-control-sop.md', 'support/sla-p1-2026.pdf']",1,"The model failed to provide an answer and instead returned a technical error message ('ERROR: No module named 'rank_bm25''), failing to address any part of the query.",variant_hybrid
+gq07,Insufficient Context,Công ty sẽ phạt bao nhiêu nếu team IT vi phạm cam kết SLA P1?,ERROR: No module named 'rank_bm25',"Tài liệu hiện có không quy định mức phạt hay hình thức xử lý khi vi phạm SLA P1. Tài liệu sla-p1-2026.pdf chỉ mô tả quy trình xử lý và SLA target, không có điều khoản về penalty.",1,"The provided context is empty, yet the answer provides a specific technical error message regarding a missing Python module, which is information not present in the context.",1,The answer is a technical error message unrelated to the user's query about SLA penalties.,,No expected sources,1,The model failed to process the query and returned a technical error message instead of providing an answer based on the provided context.,variant_hybrid
+gq08,HR Policy,Nhân viên phải báo trước bao nhiêu ngày để xin nghỉ phép năm? Con số này có giống với số ngày cần giấy tờ khi nghỉ ốm không?,ERROR: No module named 'rank_bm25',Nghỉ phép năm cần báo trước ít nhất 3 ngày làm việc qua HR Portal. Nghỉ ốm cũng liên quan đến mốc 3 ngày: nếu nghỉ TRÊN 3 ngày liên tiếp thì cần giấy tờ y tế từ bệnh viện. Hai con số '3 ngày' này áp dụng cho hai tình huống khác nhau.,1,"The provided context is empty, yet the answer provides a specific technical error message regarding a missing Python module, which is information not present in the context.",1,The answer is a technical error message unrelated to the user's query about labor regulations.,0,Retrieved: 0/1 expected sources. Missing: ['hr/leave-policy-2026.pdf'],1,"The model failed to provide an answer and instead returned a technical error message, missing all key points of the query.",variant_hybrid
+gq09,IT Helpdesk,"Mật khẩu tài khoản công ty cần đổi định kỳ không? Nếu có, hệ thống sẽ nhắc nhở trước bao nhiêu ngày và đổi qua đâu?",ERROR: No module named 'rank_bm25',"Có. Mật khẩu phải được thay đổi mỗi 90 ngày. Hệ thống sẽ nhắc nhở 7 ngày trước khi hết hạn. Để đổi mật khẩu, truy cập https://sso.company.internal/reset hoặc liên hệ Helpdesk qua ext. 9000.",1,"The provided context is empty, yet the answer provides a specific technical error message regarding a missing Python module, which is information not present in the context.",1,The answer is a technical error message unrelated to the user's query about company password policies.,0,Retrieved: 0/1 expected sources. Missing: ['support/helpdesk-faq.md'],1,The model answer failed to provide any information regarding the query and instead returned a technical error message.,variant_hybrid
+gq10,Refund,Chính sách hoàn tiền hiện tại áp dụng cho đơn hàng đặt trước ngày 01/02/2026 không?,ERROR: No module named 'rank_bm25',Không. Chính sách hoàn tiền phiên bản 4 có hiệu lực từ ngày 01/02/2026 và chỉ áp dụng cho các đơn hàng được đặt kể từ ngày đó. Các đơn hàng đặt trước ngày này sẽ áp dụng theo chính sách hoàn tiền phiên bản 3.,1,"The provided context is empty, yet the answer provides a specific technical error message regarding a missing Python module, which is information not present in the context.",1,The answer is a technical error message unrelated to the user's query about refund policies.,0,Retrieved: 0/1 expected sources. Missing: ['policy/refund-v4.pdf'],1,The model failed to provide an answer and instead returned a technical error message related to a missing Python module.,variant_hybrid
