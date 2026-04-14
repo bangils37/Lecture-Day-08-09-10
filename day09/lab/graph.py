@@ -17,6 +17,9 @@ from typing import TypedDict, Literal, Optional
 # Uncomment nếu dùng LangGraph:
 # from langgraph.graph import StateGraph, END
 
+EMBEDDING_MODEL_NAME = os.getenv("LOCAL_EMBEDDING_MODEL", "Qwen/Qwen3-Embedding-0.6B")
+EMBEDDING_FALLBACK_MODEL = "all-MiniLM-L6-v2"
+
 # ─────────────────────────────────────────────
 # 1. Shared State — dữ liệu đi xuyên toàn graph
 # ─────────────────────────────────────────────
@@ -24,6 +27,8 @@ from typing import TypedDict, Literal, Optional
 class AgentState(TypedDict):
     # Input
     task: str                           # Câu hỏi đầu vào từ user
+    embedding_model: str                # Embedding model đang dùng theo techstack
+    task_embedding_dim: int             # Số chiều embedding của task (trace/debug)
 
     # Supervisor decisions
     route_reason: str                   # Lý do route sang worker nào
@@ -50,10 +55,32 @@ class AgentState(TypedDict):
     run_id: str                         # ID của run này
 
 
+def _embed_task(text: str) -> tuple[list, str]:
+    """Sinh task embedding bằng model theo techstack, fallback nếu chưa tải được model."""
+    try:
+        from sentence_transformers import SentenceTransformer
+        if not hasattr(_embed_task, "_model"):
+            try:
+                _embed_task._model = SentenceTransformer(EMBEDDING_MODEL_NAME, trust_remote_code=True)
+                _embed_task._model_name = EMBEDDING_MODEL_NAME
+            except Exception:
+                _embed_task._model = SentenceTransformer(EMBEDDING_FALLBACK_MODEL)
+                _embed_task._model_name = EMBEDDING_FALLBACK_MODEL
+
+        vector = _embed_task._model.encode(text).tolist()
+        return vector, _embed_task._model_name
+    except Exception:
+        # Trường hợp môi trường thiếu sentence-transformers hoặc model chưa sẵn sàng.
+        return [], "unavailable"
+
+
 def make_initial_state(task: str) -> AgentState:
     """Khởi tạo state cho một run mới."""
+    task_embedding, model_used = _embed_task(task)
     return {
         "task": task,
+        "embedding_model": model_used,
+        "task_embedding_dim": len(task_embedding),
         "route_reason": "",
         "risk_high": False,
         "needs_tool": False,
@@ -273,6 +300,9 @@ def run_graph(task: str) -> AgentState:
         AgentState với final_answer, trace, routing info, v.v.
     """
     state = make_initial_state(task)
+    state["history"].append(
+        f"[graph] embedding_model={state['embedding_model']} dim={state['task_embedding_dim']}"
+    )
     result = _graph(state)
     return result
 
