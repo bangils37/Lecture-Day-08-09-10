@@ -69,7 +69,7 @@ def make_initial_state(task: str) -> AgentState:
         "workers_called": [],
         "supervisor_route": "",
         "latency_ms": None,
-        "run_id": f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+        "run_id": f"run_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}",
     }
 
 
@@ -84,41 +84,50 @@ def supervisor_node(state: AgentState) -> AgentState:
     2. Có cần MCP tool không
     3. Có risk cao cần HITL không
 
-    TODO Sprint 1: Implement routing logic dựa vào task keywords.
+    Routing theo keyword + risk signals để đảm bảo trace giải thích được.
     """
     task = state["task"].lower()
     state["history"].append(f"[supervisor] received task: {state['task'][:80]}")
 
-    # --- TODO: Implement routing logic ---
-    # Gợi ý:
-    # - "hoàn tiền", "refund", "flash sale", "license" → policy_tool_worker
-    # - "cấp quyền", "access level", "level 3", "emergency" → policy_tool_worker
-    # - "P1", "escalation", "sla", "ticket" → retrieval_worker
-    # - mã lỗi không rõ (ERR-XXX), không đủ context → human_review
-    # - còn lại → retrieval_worker
-
-    route = "retrieval_worker"         # TODO: thay bằng logic thực
-    route_reason = "default route"    # TODO: thay bằng lý do thực
+    route = "retrieval_worker"
+    route_reason = "default route: retrieval_worker"
     needs_tool = False
     risk_high = False
 
-    # Ví dụ routing cơ bản — nhóm phát triển thêm:
-    policy_keywords = ["hoàn tiền", "refund", "flash sale", "license", "cấp quyền", "access", "level 3"]
-    risk_keywords = ["emergency", "khẩn cấp", "2am", "không rõ", "err-"]
-
-    if any(kw in task for kw in policy_keywords):
-        route = "policy_tool_worker"
-        route_reason = f"task contains policy/access keyword"
-        needs_tool = True
+    policy_keywords = [
+        "hoàn tiền", "refund", "flash sale", "policy", "license",
+        "cấp quyền", "access", "access level", "level 2", "level 3",
+    ]
+    retrieval_keywords = ["p1", "sla", "ticket", "escalation", "sự cố", "incident"]
+    risk_keywords = ["emergency", "khẩn cấp", "2am", "urgent", "critical"]
+    has_unknown_error_code = "err-" in task
 
     if any(kw in task for kw in risk_keywords):
         risk_high = True
-        route_reason += " | risk_high flagged"
 
-    # Human review override
-    if risk_high and "err-" in task:
+    # Theo guideline Sprint 1: các câu P1/SLA/Ticket ưu tiên retrieval trước.
+    if any(kw in task for kw in retrieval_keywords):
+        route = "retrieval_worker"
+        route_reason = "task contains SLA/P1/ticket signal -> retrieval_worker"
+    elif any(kw in task for kw in policy_keywords):
+        route = "policy_tool_worker"
+        route_reason = "task contains policy/access signal -> policy_tool_worker"
+        needs_tool = True
+
+    # Unknown error code, thiếu context nghiệp vụ rõ ràng thì chuyển HITL.
+    if has_unknown_error_code and not any(kw in task for kw in retrieval_keywords + policy_keywords):
         route = "human_review"
-        route_reason = "unknown error code + risk_high → human review"
+        route_reason = "unknown error code without context -> human_review"
+        risk_high = True
+
+    if risk_high:
+        route_reason += " | risk_high=true"
+
+    if needs_tool:
+        route_reason += " | needs_tool=true"
+
+    if not route_reason.strip() or route_reason.strip().lower() == "unknown":
+        route_reason = "fallback route reason: keyword classifier defaulted"
 
     state["supervisor_route"] = route
     state["route_reason"] = route_reason
@@ -139,7 +148,10 @@ def route_decision(state: AgentState) -> Literal["retrieval_worker", "policy_too
     Đây là conditional edge của graph.
     """
     route = state.get("supervisor_route", "retrieval_worker")
-    return route  # type: ignore
+    if route not in ("retrieval_worker", "policy_tool_worker", "human_review"):
+        state["history"].append("[route_decision] invalid route -> fallback retrieval_worker")
+        return "retrieval_worker"
+    return route
 
 
 # ─────────────────────────────────────────────
