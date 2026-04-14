@@ -1,0 +1,47 @@
+{
+  "task": "Nhân viên vừa vào thử việc (trong probation period) muốn làm remote vì lý do cá nhân. Điều kiện là gì?",
+  "route_reason": "default route",
+  "risk_high": false,
+  "needs_tool": false,
+  "hitl_triggered": false,
+  "retrieved_chunks": [
+    {
+      "text": "SLA P1: Phản hồi trong 15 phút, giải quyết trong 4 giờ. Escalation sau 2 giờ.",
+      "source": "sla_p1_2026.txt",
+      "score": 0.5,
+      "metadata": {}
+    },
+    {
+      "text": "Cấp quyền Level 3 yêu cầu approval của IT Security và Line Manager.",
+      "source": "access_control_sop.txt",
+      "score": 0.5,
+      "metadata": {}
+    }
+  ],
+  "retrieved_sources": [
+    "access_control_sop.txt",
+    "sla_p1_2026.txt"
+  ],
+  "policy_result": {},
+  "mcp_tools_used": [],
+  "final_answer": "*   Role: Virtual Assistant for CS + IT Helpdesk.\n    *   Task: Answer user questions based *only* on the provided context.\n    *   Rules:\n        1. No external knowledge.\n        2. If not in context, say: \"Tôi không tìm thấy thông tin cụ thể trong tài liệu nội bộ.\"\n        3. Cite sources as [1], [2]... or [filename].\n        4. Language: Vietnamese, concise, professional.\n\n    *   DOC [1]: `sla_p1_2026.txt` - SLA P1 response (15 mins), resolution (4 hrs), escalation (2 hrs).\n    *   DOC [2]: `access_control_sop.txt` - Level 3 access requires IT Security and Line Manager approval.\n\n    *   User Question: \"Nhân viên vừa vào thử việc (trong probation period) muốn làm remote vì lý do cá nhân. Điều kiện là gì?\" (New employee on probation wants to work remotely for personal reasons. What are the conditions?)\n\n    *   Does DOC [1] mention remote work or probation? No.\n    *   Does DOC [2] mention remote work or probation? No.\nTôi không tìm thấy thông tin cụ thể trong tài liệu nội bộ.",
+  "sources": [
+    "access_control_sop.txt",
+    "sla_p1_2026.txt"
+  ],
+  "confidence": 0.3,
+  "history": [
+    "[supervisor] route=retrieval_worker reason=default route",
+    "[retrieval_worker] found 2 chunks",
+    "[synthesis_worker] generated answer (conf=0.3)",
+    "[graph] completed in 8751ms"
+  ],
+  "workers_called": [
+    "retrieval_worker",
+    "synthesis_worker"
+  ],
+  "supervisor_route": "retrieval_worker",
+  "latency_ms": 8751,
+  "run_id": "run_20260414_143624",
+  "question_id": "q14"
+}

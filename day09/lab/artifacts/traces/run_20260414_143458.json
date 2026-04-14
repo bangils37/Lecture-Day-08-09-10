@@ -1,0 +1,39 @@
+{
+  "task": "Quy trình xử lý sự cố P1 gồm mấy bước và bước đầu tiên là gì?",
+  "route_reason": "default route",
+  "risk_high": false,
+  "needs_tool": false,
+  "hitl_triggered": false,
+  "retrieved_chunks": [
+    {
+      "text": "Cấp quyền Level 3 yêu cầu approval của IT Security và Line Manager.",
+      "source": "access_control_sop.txt",
+      "score": 0.5,
+      "metadata": {}
+    }
+  ],
+  "retrieved_sources": [
+    "access_control_sop.txt"
+  ],
+  "policy_result": {},
+  "mcp_tools_used": [],
+  "final_answer": "*   Role: Professional CS + IT Helpdesk Virtual Assistant.\n    *   Task: Answer based *only* on provided context.\n    *   Rule 1: No external knowledge.\n    *   Rule 2: If no answer in context, say \"Tôi không tìm thấy thông tin cụ thể trong tài liệu nội bộ.\"\n    *   Rule 3: Cite document indices [1], [2], etc.\n    *   Rule 4: Vietnamese, concise, professional.\n\n    *   DOC [1]: access_control_sop.txt\n    *   CONTENT: \"Cấp quyền Level 3 yêu cầu approval của IT Security và Line Manager.\"\n\n    *   Question: \"Quy trình xử lý sự cố P1 gồm mấy bước và bước đầu tiên là gì?\" (How many steps are in the P1 incident handling process and what is the first step?)\n\n    *   Does DOC [1] mention P1 incident handling? No.\n    *   Does DOC [1] mention steps for incident handling? No.\n    *   DOC [1] only discusses Level 3 access permission approvals.\n\n    *   Since the information is not in the context, apply Rule 2.\nTôi không tìm thấy thông tin cụ thể trong tài liệu nội bộ.",
+  "sources": [
+    "access_control_sop.txt"
+  ],
+  "confidence": 0.3,
+  "history": [
+    "[supervisor] route=retrieval_worker reason=default route",
+    "[retrieval_worker] found 1 chunks",
+    "[synthesis_worker] generated answer (conf=0.3)",
+    "[graph] completed in 8354ms"
+  ],
+  "workers_called": [
+    "retrieval_worker",
+    "synthesis_worker"
+  ],
+  "supervisor_route": "retrieval_worker",
+  "latency_ms": 8354,
+  "run_id": "run_20260414_143458",
+  "question_id": "q08"
+}
