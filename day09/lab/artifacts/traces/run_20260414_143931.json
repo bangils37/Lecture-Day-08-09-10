@@ -1,0 +1,63 @@
+{
+  "task": "SLA xử lý ticket P1 là bao lâu?",
+  "route_reason": "default route",
+  "risk_high": false,
+  "needs_tool": false,
+  "hitl_triggered": false,
+  "retrieved_chunks": [
+    {
+      "text": "SLA TICKET - QUY ĐỊNH XỬ LÝ SỰ CỐ\nSource: support/sla-p1-2026.pdf\nDepartment: IT\nEffective Date: 2026-01-15\nAccess: internal",
+      "source": "sla_p1_2026.txt",
+      "score": 0.6495156405632653,
+      "metadata": {
+        "text": "SLA TICKET - QUY ĐỊNH XỬ LÝ SỰ CỐ\nSource: support/sla-p1-2026.pdf\nDepartment: IT\nEffective Date: 2026-01-15\nAccess: internal",
+        "source": "sla_p1_2026.txt",
+        "timestamp": "2026-04-14T14:37:20.563913"
+      }
+    },
+    {
+      "text": "Ticket P3:\n- Phản hồi ban đầu: 1 ngày làm việc.\n- Xử lý và khắc phục: 5 ngày làm việc.",
+      "source": "sla_p1_2026.txt",
+      "score": 0.6117816395030912,
+      "metadata": {
+        "text": "Ticket P3:\n- Phản hồi ban đầu: 1 ngày làm việc.\n- Xử lý và khắc phục: 5 ngày làm việc.",
+        "source": "sla_p1_2026.txt",
+        "timestamp": "2026-04-14T14:37:20.857932"
+      }
+    },
+    {
+      "text": "Ticket P2:\n- Phản hồi ban đầu: 2 giờ.\n- Xử lý và khắc phục: 1 ngày làm việc.\n- Escalation: Tự động escalate sau 90 phút không có phản hồi.",
+      "source": "sla_p1_2026.txt",
+      "score": 0.6021409748050273,
+      "metadata": {
+        "text": "Ticket P2:\n- Phản hồi ban đầu: 2 giờ.\n- Xử lý và khắc phục: 1 ngày làm việc.\n- Escalation: Tự động escalate sau 90 phút không có phản hồi.",
+        "source": "sla_p1_2026.txt",
+        "timestamp": "2026-04-14T14:37:20.829018"
+      }
+    }
+  ],
+  "retrieved_sources": [
+    "sla_p1_2026.txt"
+  ],
+  "policy_result": {},
+  "mcp_tools_used": [],
+  "final_answer": "*   Role: Professional CS + IT Helpdesk virtual assistant.\n    *   Task: Answer user questions based *only* on the provided context.\n    *   Constraints:\n        1. No external knowledge.\n        2. If the answer is not in the context, say: \"Tôi không tìm thấy thông tin cụ thể trong tài liệu nội bộ.\"\n        3. Cite source as [1], [2], etc.\n        4. Language: Vietnamese, concise, professional.\n\n    *   DOC [1]: Metadata about SLA TICKET - QUY ĐỊNH XỬ LÝ SỰ CỐ.\n    *   DOC [2]: Details for Ticket P3 (Response: 1 working day, Resolution: 5 working days).\n    *   DOC [3]: Details for Ticket P2 (Response: 2 hours, Resolution: 1 working day, Escalation: 90 mins).\n\n    *   User Question: \"SLA xử lý ticket P1 là bao lâu?\" (How long is the SLA for handling P1 tickets?)\n\n    *   Check DOC [1]: No timeframes for P1.\n    *   Check DOC [2]: Information about P3.\n    *   Check DOC [3]: Information about P2.\n    *   Conclusion: There is no information regarding \"Ticket P1\" in the provided context.\n\n    *   Rule 2 applies: \"Tôi không tìm thấy thông tin cụ thể trong tài liệu nội bộ.\"\nTôi không tìm thấy thông tin cụ thể trong tài liệu nội bộ.",
+  "sources": [
+    "sla_p1_2026.txt"
+  ],
+  "confidence": 0.3,
+  "history": [
+    "[supervisor] route=retrieval_worker reason=default route",
+    "[retrieval_worker] found 3 chunks",
+    "[synthesis_worker] generated answer (conf=0.3)",
+    "[graph] completed in 17038ms"
+  ],
+  "workers_called": [
+    "retrieval_worker",
+    "synthesis_worker"
+  ],
+  "supervisor_route": "retrieval_worker",
+  "latency_ms": 17038,
+  "run_id": "run_20260414_143931",
+  "question_id": "q01"
+}

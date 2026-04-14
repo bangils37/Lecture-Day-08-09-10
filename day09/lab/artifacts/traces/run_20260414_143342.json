@@ -1,0 +1,39 @@
+{
+  "task": "SLA xử lý ticket P1 là bao lâu?",
+  "route_reason": "default route",
+  "risk_high": false,
+  "needs_tool": false,
+  "hitl_triggered": false,
+  "retrieved_chunks": [
+    {
+      "text": "SLA P1: Phản hồi trong 15 phút, giải quyết trong 4 giờ. Escalation sau 2 giờ.",
+      "source": "sla_p1_2026.txt",
+      "score": 0.5,
+      "metadata": {}
+    }
+  ],
+  "retrieved_sources": [
+    "sla_p1_2026.txt"
+  ],
+  "policy_result": {},
+  "mcp_tools_used": [],
+  "final_answer": "*   Role: Professional CS + IT Helpdesk virtual assistant.\n    *   Task: Answer user questions based *only* on the provided context.\n    *   Rules:\n        1. No external knowledge.\n        2. If not in context, say: \"Tôi không tìm thấy thông tin cụ thể trong tài liệu nội bộ.\"\n        3. Cite document numbers/names as [1], [2]... or [filename].\n        4. Language: Vietnamese, concise, professional.\n\n    *   DOC [1]: sla_p1_2026.txt\n    *   CONTENT: \"SLA P1: Phản hồi trong 15 phút, giải quyết trong 4 giờ. Escalation sau 2 giờ.\"\n\n    *   \"SLA xử lý ticket P1 là bao lâu?\" (What is the SLA for handling P1 tickets?)\n\n    *   Response time: 15 minutes.\n    *   Resolution time: 4 hours.\n    *   Escalation: after 2 hours.\n    *   Citation: [1] (from sla_p1_2026.txt).\n\n    *   Draft: SLA xử lý ticket P1 bao gồm: phản hồi trong 15 phút và giải quyết trong 4 giờ [1].\nSLA xử lý ticket P1 bao gồm: phản hồi trong 15 phút và giải quyết trong 4 giờ [1].",
+  "sources": [
+    "sla_p1_2026.txt"
+  ],
+  "confidence": 0.3,
+  "history": [
+    "[supervisor] route=retrieval_worker reason=default route",
+    "[retrieval_worker] found 1 chunks",
+    "[synthesis_worker] generated answer (conf=0.3)",
+    "[graph] completed in 16480ms"
+  ],
+  "workers_called": [
+    "retrieval_worker",
+    "synthesis_worker"
+  ],
+  "supervisor_route": "retrieval_worker",
+  "latency_ms": 16480,
+  "run_id": "run_20260414_143342",
+  "question_id": "q01"
+}
