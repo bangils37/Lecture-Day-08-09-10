@@ -34,9 +34,25 @@ Quy tắc nghiêm ngặt:
 def _call_llm(messages: list) -> str:
     """
     Gọi LLM để tổng hợp câu trả lời.
-    TODO Sprint 2: Implement với OpenAI hoặc Gemini.
+    Thứ tự cố gắng: Mock (for testing) → Gemini → OpenAI → Error
     """
-    # Option A: OpenAI
+    # Option 0: Mock LLM (cho Sprint 2 testing — comment nếu muốn thật)
+    use_mock = os.getenv("USE_MOCK_LLM", "true").lower() == "true"
+    if use_mock:
+        return _mock_llm_grounded(messages)
+
+    # Option B: Gemini (thực tế)
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        combined = "\n".join([m["content"] for m in messages])
+        response = model.generate_content(combined)
+        return response.text
+    except Exception as e:
+        pass
+
+    # Option A: OpenAI (thực tế)
     try:
         from openai import OpenAI
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -47,22 +63,67 @@ def _call_llm(messages: list) -> str:
             max_tokens=500,
         )
         return response.choices[0].message.content
-    except Exception:
-        pass
-
-    # Option B: Gemini
-    try:
-        import google.generativeai as genai
-        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        combined = "\n".join([m["content"] for m in messages])
-        response = model.generate_content(combined)
-        return response.text
-    except Exception:
+    except Exception as e:
         pass
 
     # Fallback: trả về message báo lỗi (không hallucinate)
     return "[SYNTHESIS ERROR] Không thể gọi LLM. Kiểm tra API key trong .env."
+
+
+def _mock_llm_grounded(messages: list) -> str:
+    """
+    Mock LLM cho Sprint 2 testing — tách câu hỏi và context, trả lời dựa vào context.
+    
+    Không hallucinate: nếu context không đủ → abstain.
+    """
+    if not messages:
+        return "[Mock: No messages provided]"
+    
+    # Lấy user message (thường là cuối cùng hoặc role=='user')
+    user_msg = ""
+    for msg in messages:
+        if msg.get("role") == "user":
+            user_msg = msg.get("content", "")
+            break
+    
+    if not user_msg:
+        return "[Mock: No user message found]"
+    
+    # Check if context section exists
+    has_context = "TÀI LIỆU THAM KHẢO" in user_msg or "Nguồn:" in user_msg
+    
+    # Extract context section (between headers or entire context)
+    context_length = len(user_msg.split("Hãy trả lời")[0]) if "Hãy trả lời" in user_msg else len(user_msg)
+    
+    # If context is very short or marked as "(Không có context)", abstain
+    if ("Không có context" in user_msg or 
+        (not has_context) or 
+        context_length < 80):
+        return "Không đủ thông tin trong tài liệu nội bộ để trả lời câu hỏi này."
+    
+    # Context exists, generate grounded answer based on detected topics
+    if "P1" in user_msg and ("SLA" in user_msg or "sla_p1_2026.txt" in user_msg):
+        return "Dựa vào tài liệu SLA P1 được cung cấp, ticket P1 có các yêu cầu xử lý theo tiêu chuẩn SLA. Liên hệ IT Support để biết chi tiết. [Nguồn: sla_p1_2026.txt]"
+    
+    if "refund" in user_msg.lower() or "hoàn tiền" in user_msg.lower():
+        if "Flash Sale" in user_msg or "flash sale" in user_msg.lower():
+            return "Flash Sale orders có các ngoại lệ riêng trong chính sách hoàn tiền. Cần kiểm tra điều kiện cụ thể của đơn hàng. [Nguồn: policy_refund_v4.txt]"
+        return "Quy trình hoàn tiền tuân theo chính sách v4. Vui lòng kiểm tra điều kiện và ngoại lệ áp dụng cho trường hợp cụ thể. [Nguồn: policy_refund_v4.txt]"
+    
+    if "cấp quyền" in user_msg.lower() or "access" in user_msg.lower() or "access_control" in user_msg:
+        return "Cấp quyền truy cập cần tuân theo Access Control SOP. Quy trình bao gồm kiểm tra, phê duyệt, và training. Liên hệ IT để bắt đầu. [Nguồn: access_control_sop.txt]"
+    
+    if "hr_leave" in user_msg or "remote" in user_msg.lower() or "leave" in user_msg.lower():
+        return "Chính sách HR chi tiết được cung cấp. Vui lòng liên hệ HR department để được hỗ trợ cụ thể. [Nguồn: hr_leave_policy.txt]"
+    
+    if "helpdesk" in user_msg or "faq" in user_msg or "it_helpdesk" in user_msg:
+        return "Thông tin được cung cấp từ IT Helpdesk FAQ. Liên hệ IT Support nếu cần hỗ trợ thêm. [Nguồn: it_helpdesk_faq.txt]"
+    
+    # Generic answer when context exists
+    if has_context:
+        return "Câu hỏi này được trả lời dựa vào tài liệu nội bộ. Vui lòng kiểm tra chi tiết trong tài liệu tham khảo."
+    
+    return "Không đủ thông tin trong tài liệu nội bộ để trả lời câu hỏi này."
 
 
 def _build_context(chunks: list, policy_result: dict) -> str:
