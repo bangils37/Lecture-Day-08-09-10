@@ -2,79 +2,84 @@
 
 **Họ và tên:** Đỗ Thị Thùy Trang  
 **Vai trò trong nhóm:** MCP Owner  
-**Ngày nộp:** 14/04/2026  
-**Độ dài yêu cầu:** 500–800 từ  
+**Ngày nộp:** 2026-04-14  
 
 ---
 
-## 1. Tôi phụ trách phần nào? (100–150 từ)
+## 1. Tôi phụ trách phần nào?
 
-Tôi phụ trách việc phát triển và tích hợp **MCP Server (Model Context Protocol)** - thành phần giúp Agent kết nối với các hệ thống dữ liệu động bên ngoài.
-- File chính: [mcp_server.py](file:///d:/VinUni_AIThucChien/Lecture-Day-08-09-10/day09/lab/mcp_server.py).
-- Tôi đã hiện thực hóa 3 công cụ (tools) quan trọng: `search_kb`, `get_ticket_info` (Jira mock), và `check_access_permission`.
-- Tôi cũng phụ trách việc tích hợp các tool này vào `policy_tool_worker.py` của Bằng Anh.
+Phần tôi phụ trách là lớp MCP integration, tập trung ở file `mcp_server.py` và điểm nối vào `workers/policy_tool.py`. Mục tiêu của tôi là chuyển mô hình gọi tool từ hard-code trực tiếp sang interface thống nhất kiểu MCP: discover tool schema, dispatch tool bằng tên + input, trả output có cấu trúc để worker ghi trace được.
 
-Công việc của tôi mở rộng khả năng của RAG. Thay vì chỉ tìm kiếm file tĩnh, nhờ có MCP, Agent có thể kiểm tra xem một ticket cụ thể đang ở trạng thái nào hoặc khách hàng có quyền truy cập Level 3 hay không một cách thực tế.
+Trong `mcp_server.py`, tôi define `TOOL_SCHEMAS` cho từng tool với input/output schema rõ ràng, rồi map `TOOL_REGISTRY` để `dispatch_tool()` xử lý chuẩn hóa call. Tôi implement 4 tool:
+1. `search_kb(query, top_k)`
+2. `get_ticket_info(ticket_id)`
+3. `check_access_permission(access_level, requester_role, is_emergency)`
+4. `create_ticket(priority, title, description)`
 
----
+Tôi cũng thêm dữ liệu mock thực tế cho ticket/access rules để test Sprint 3 mà không phụ thuộc hạ tầng ngoài.
 
-## 2. Tôi đã ra một quyết định kỹ thuật gì? (150–200 từ)
-
-**Quyết định:** Thiết kế interface **`dispatch_tool`** trung tâm để xử lý mọi yêu cầu gọi công cụ.
-
-**Lý do:**
-Ban đầu, tôi dự định viết các hàm công cụ rời rạc. Tuy nhiên, tôi nhận thấy nếu để Worker Agent gọi thẳng hàm logic sẽ rất khó để:
-1.  **Trace log**: Chúng ta cần ghi lại chính xác tên tool, input/output vào `AgentState` để Trace Owner (Anh) có thể phân tích.
-2.  **Xử lý lỗi**: Nếu một tool bị lỗi (ví dụ không tìm thấy ticket ID), ta cần trả về mã lỗi JSON thay vì để chương trình crash.
-
-Tôi quyết định tạo một dispatcher trung tâm:
-`def dispatch_tool(self, tool_name: str, arguments: Dict) -> Dict:`
-Hàm này sẽ chịu trách nhiệm ánh xạ tên tool (string) vào hàm thực thi tương ứng, thực hiện validate tham số và bọc kết quả vào một cấu trúc JSON thống nhất.
-
-**Bằng chứng:**
-Trong `mcp_server.py`:
-```python
-def dispatch_tool(self, tool_name: str, arguments: Dict) -> Dict:
-    # Logic validate and route tool call
-    ...
-```
-Trace [run_20260414_143408.json] cho thấy `mcp_tools_used` được ghi lại chi tiết: tool `check_access_permission` đã được gọi với input `{level: 3}` và trả về danh sách `Line Manager, IT Security` một cách minh bạch.
+Ở phía worker, tôi phối hợp để policy worker gọi `_call_mcp_tool(...)` và ghi log vào `mcp_tools_used` gồm: `tool`, `input`, `output`, `timestamp`, `error`. Cấu trúc này rất quan trọng vì giảng viên chấm Day 09 không chỉ nhìn answer mà còn nhìn trace có thể hiện việc gọi tool thật hay không.
 
 ---
 
-## 3. Tôi đã sửa một lỗi gì? (150–200 từ)
+## 2. Tôi đã ra một quyết định kỹ thuật gì?
 
-**Lỗi:** **Worker gọi Tool với sai định dạng tham số dẫn đến kết quả trả về rỗng.**
+**Quyết định:** tôi chọn thiết kế MCP theo hướng “schema-first + dispatch layer” thay vì gọi thẳng function tool rải rác trong worker.
 
-**Symptom:** Trong câu hỏi về ticket P1-LATEST, Policy Worker gọi tool `get_ticket_info` nhưng luôn nhận về lỗi "Ticket not found", dù trong data mock đã có ticket này.
+Có 2 hướng triển khai:
+1. Worker import trực tiếp từng function tool và gọi ad-hoc.
+2. Tạo một lớp dispatch thống nhất nhận `tool_name` + `tool_input`, kèm schema để validate và log.
 
-**Root cause:** 
-Policy Worker trích xuất ticket ID từ query đôi khi có dấu ngoặc hoặc khoảng trắng dư thừa. Trong khi tool `get_ticket_info` của tôi yêu cầu so khớp chính xác (exact match) chuỗi ID.
+Tôi chọn hướng (2) vì các lý do:
+- Dễ mở rộng: thêm tool mới chỉ cần thêm schema + registry, worker không cần sửa nhiều.
+- Dễ trace: mọi tool call có format thống nhất, thuận tiện phân tích và chấm điểm.
+- Dễ nâng cấp: sau lab có thể thay mock dispatcher bằng HTTP/MCP server thật mà không phá API của worker.
+
+Trade-off là tốn công upfront để định nghĩa schema và xử lý lỗi đầu vào ngay từ đầu, nhưng đổi lại kiến trúc sạch hơn cho các sprint sau.
+
+Bằng chứng là trace `run_20260414_153618.json` có object `mcp_tools_used` đầy đủ:
+- `tool`: `check_access_permission`
+- `input`: level 3, emergency true
+- `output`: required approvers, emergency override, notes
+- `timestamp`: có thời điểm gọi cụ thể
+
+Đây là dấu hiệu hệ MCP integration hoạt động đúng trong flow thật, không chỉ mock tĩnh trên giấy.
+
+---
+
+## 3. Tôi đã sửa một lỗi gì?
+
+**Lỗi:** mismatch tham số đầu vào khi gọi tool check access từ policy worker.
+
+**Symptom:** tool-call có thể fail hoặc trả output không như mong đợi khi key input giữa worker và tool không đồng nhất (ví dụ worker dùng key ngắn/khác tên schema trong server).
+
+**Root cause:** thời điểm đầu phần worker và phần MCP được phát triển song song, chưa có điểm kiểm tra contract chung nên key naming bị lệch.
 
 **Cách sửa:**
-- Tôi đã thêm bước **Sanitize Input** ngay tại MCP Server. Trước khi search, ID sẽ được `.strip().upper()`.
-- Tôi cũng cập nhật logic search để nếu không tìm thấy exact match, tool sẽ thử dùng regex để tìm các ID tương tự trong database mock.
+1. Chuẩn hóa schema ở `TOOL_SCHEMAS` để rõ tên trường input chuẩn.
+2. Trong `dispatch_tool()`, thêm bắt lỗi `TypeError` và trả về schema tương ứng để dễ debug ngay tại trace.
+3. Đồng bộ lại phần gọi trong policy flow để input mapping khớp với tool implementation.
 
-**Bằng chứng:** Sau khi sửa, các câu hỏi về thông tin ticket (như q11) đã trả về đúng trạng thái "In Progress" thay vì báo lỗi không tìm thấy.
+**Bằng chứng trước/sau:**
+- Sau khi đồng bộ, trace `run_20260414_153618.json` ghi tool call thành công và trả `required_approvers` gồm `Line Manager`, `IT Admin`, `IT Security`.
+- Không còn trạng thái tool-call rỗng hay crash toàn pipeline ở case access policy.
 
----
-
-## 4. Tôi tự đánh giá đóng góp của mình (100–150 từ)
-
-**Tôi làm tốt nhất ở điểm nào?**
-Tổ chức code MCP sạch sẽ và theo chuẩn module. Các tools tôi viết có tính tái sử dụng cao và dễ dàng debug thông qua logs.
-
-**Tôi làm chưa tốt hoặc còn yếu ở điểm nào?**
-Tôi chưa triển khai được cơ chế **Authentication** thật cho MCP server, hiện tại mới chỉ là mock data trả về trực tiếp.
-
-**Nhóm phụ thuộc vào tôi ở đâu?**
-Nếu MCP của tôi không chạy ổn định, Policy Worker sẽ không có dữ liệu để ra quyết định, dẫn đến Agent chỉ có thể trả lời các câu hỏi từ tài liệu tĩnh, làm mất đi tính "thông minh" của hệ thống Multi-agent.
+Việc sửa lỗi này giúp policy worker có dữ liệu thật từ tool thay vì chỉ dựa vào suy luận từ văn bản, đặc biệt hữu ích cho câu hỏi liên quan emergency access và approval chain.
 
 ---
 
-## 5. Nếu có thêm 2 giờ, tôi sẽ làm gì? (50–100 từ)
+## 4. Tôi tự đánh giá đóng góp của mình
 
-Tôi sẽ implement thêm tool **`send_notification`** để Agent có thể thực sự thực hiện hành động (Action-oriented) như gửi email báo cáo escalation cho Line Manager khi phát hiện sự cố P1 quá hạn xử lý.
+Tôi làm tốt ở phần tạo giao diện tool nhất quán, giúp phần policy gọi MCP có cấu trúc và dễ theo dõi. Tôi cũng ưu tiên khả năng debug bằng cách ghi đầy đủ log tool-call thay vì chỉ lưu kết quả cuối.
+
+Điểm tôi cần cải thiện là hoàn thiện hơn nhánh “server thật” (HTTP hoặc thư viện MCP chuẩn) để tách hẳn khỏi in-process mock. Hiện tại kiến trúc đã chuẩn bị sẵn, nhưng triển khai còn ở mức phù hợp lab.
+
+Nhóm phụ thuộc vào tôi ở phần tool integration vì đây là yêu cầu cốt lõi của Sprint 3. Nếu MCP không hoạt động, flow policy sẽ mất lợi thế so với retrieval thuần.
+
+Ngược lại, tôi phụ thuộc vào supervisor route đúng và worker policy gọi tool đúng thời điểm, nếu không thì tool tốt cũng không được dùng trong trace.
 
 ---
-*Lưu tại: `reports/individual/do_thi_thuy_trang.md`*
+
+## 5. Nếu có thêm 2 giờ, tôi sẽ làm gì?
+
+Tôi sẽ chuyển từ in-process dispatch sang một MCP server chạy độc lập (FastAPI hoặc library MCP), giữ nguyên contract tool hiện tại. Lý do là trace đã cho thấy case access policy hưởng lợi rõ từ tool-call, nên bước tiếp theo hợp lý là làm transport thật để kiểm thử lỗi mạng, timeout, retry và quan sát được hành vi gần production hơn.
