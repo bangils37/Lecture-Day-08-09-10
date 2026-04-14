@@ -56,11 +56,6 @@ day10/lab/chroma_db/
 reports/individual/*.md
 !reports/individual/template.md
 
-# --- Grading questions (không public trước 17:00) ---
-day08/lab/data/grading_questions.json
-day09/lab/data/grading_questions.json
-day10/lab/data/grading_questions.json
-
 # --- IDEs ---
 .vscode/
 .idea/
