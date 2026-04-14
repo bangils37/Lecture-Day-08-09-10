@@ -61,8 +61,7 @@ def _call_llm(messages: list) -> str:
     except Exception:
         pass
 
-    # Fallback: trả về message báo lỗi (không hallucinate)
-    return "[SYNTHESIS ERROR] Không thể gọi LLM. Kiểm tra API key trong .env."
+    return ""
 
 
 def _build_context(chunks: list, policy_result: dict) -> str:
@@ -88,6 +87,50 @@ def _build_context(chunks: list, policy_result: dict) -> str:
     return "\n\n".join(parts)
 
 
+def _rule_based_answer(task: str, chunks: list, policy_result: dict) -> str:
+    """Sinh câu trả lời grounded khi không dùng được LLM."""
+    if not chunks:
+        return "Không đủ thông tin trong tài liệu nội bộ để trả lời câu hỏi này."
+
+    lines = []
+    if policy_result:
+        exceptions = policy_result.get("exceptions_found", [])
+        if exceptions:
+            lines.append("Kết luận policy: yêu cầu không được áp dụng do ngoại lệ.")
+            for ex in exceptions:
+                lines.append(f"- {ex.get('rule', '').strip()}")
+        elif policy_result.get("policy_applies") is True:
+            lines.append("Kết luận policy: yêu cầu có thể áp dụng theo điều kiện hiện có trong tài liệu.")
+
+        note = policy_result.get("policy_version_note", "").strip()
+        if note:
+            lines.append(f"Lưu ý phiên bản policy: {note}")
+
+    primary = chunks[0]
+    snippet = primary.get("text", "").strip().replace("\n", " ")
+    if len(snippet) > 360:
+        snippet = snippet[:360].rstrip() + "..."
+
+    lines.append(f"Bằng chứng chính: {snippet}")
+    lines.append("Trả lời được tổng hợp từ bằng chứng truy xuất trong tài liệu nội bộ.")
+    return "\n".join(lines)
+
+
+def _append_citations(answer: str, chunks: list) -> str:
+    """Bảo đảm answer có citation dạng [1] và [source]."""
+    if not chunks:
+        return answer
+
+    citation_lines = ["", "Nguồn trích dẫn:"]
+    for idx, chunk in enumerate(chunks[:3], 1):
+        citation_lines.append(f"[{idx}] {chunk.get('source', 'unknown')}")
+
+    joined = "\n".join(citation_lines)
+    if "[1]" in answer:
+        return answer + "\n" + joined
+    return answer + " [1]\n" + joined
+
+
 def _estimate_confidence(chunks: list, answer: str, policy_result: dict) -> float:
     """
     Ước tính confidence dựa vào:
@@ -100,7 +143,7 @@ def _estimate_confidence(chunks: list, answer: str, policy_result: dict) -> floa
     if not chunks:
         return 0.1  # Không có evidence → low confidence
 
-    if "Không đủ thông tin" in answer or "không có trong tài liệu" in answer.lower():
+    if "không đủ thông tin" in answer.lower() or "không có trong tài liệu" in answer.lower():
         return 0.3  # Abstain → moderate-low
 
     # Weighted average của chunk scores
@@ -123,9 +166,17 @@ def synthesize(task: str, chunks: list, policy_result: dict) -> dict:
     Returns:
         {"answer": str, "sources": list, "confidence": float}
     """
-    context = _build_context(chunks, policy_result)
+    if not chunks:
+        answer = "Không đủ thông tin trong tài liệu nội bộ để trả lời câu hỏi này."
+        sources = []
+        confidence = _estimate_confidence(chunks, answer, policy_result)
+        return {
+            "answer": answer,
+            "sources": sources,
+            "confidence": confidence,
+        }
 
-    # Build messages
+    context = _build_context(chunks, policy_result)
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {
@@ -134,12 +185,17 @@ def synthesize(task: str, chunks: list, policy_result: dict) -> dict:
 
 {context}
 
-Hãy trả lời câu hỏi dựa vào tài liệu trên."""
+Trả lời ngắn gọn, grounded theo context và bắt buộc có citation."""
         }
     ]
 
-    answer = _call_llm(messages)
-    sources = list({c.get("source", "unknown") for c in chunks})
+    use_llm = bool(os.getenv("OPENAI_API_KEY") or os.getenv("GOOGLE_API_KEY"))
+    answer = _call_llm(messages).strip() if use_llm else ""
+    if not answer:
+        answer = _rule_based_answer(task, chunks, policy_result)
+
+    answer = _append_citations(answer, chunks)
+    sources = sorted({c.get("source", "unknown") for c in chunks})
     confidence = _estimate_confidence(chunks, answer, policy_result)
 
     return {
@@ -177,6 +233,9 @@ def run(state: dict) -> dict:
         state["final_answer"] = result["answer"]
         state["sources"] = result["sources"]
         state["confidence"] = result["confidence"]
+
+        if state["confidence"] < 0.4:
+            state["hitl_triggered"] = True
 
         worker_io["output"] = {
             "answer_length": len(result["answer"]),
