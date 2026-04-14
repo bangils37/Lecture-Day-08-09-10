@@ -1,0 +1,53 @@
+{
+  "task": "Ticket P1 không được phản hồi sau 10 phút. Hệ thống tự động làm gì?",
+  "route_reason": "default route",
+  "risk_high": false,
+  "needs_tool": false,
+  "hitl_triggered": false,
+  "retrieved_chunks": [
+    {
+      "text": "Ticket P1:\n- Phản hồi ban đầu (first response): 15 phút kể từ khi ticket được tạo.\n- Xử lý và khắc phục (resolution): 4 giờ.\n- Escalation: Tự động escalate lên Senior Engineer nếu không có phản hồi trong 10 phút.\n- Thông báo stakeholder: Ngay khi nhận ticket, update mỗi 30 phút cho đến khi resolve.",
+      "source": "sla_p1_2026.txt",
+      "score": 0.6,
+      "metadata": {}
+    },
+    {
+      "text": "Ticket P2:\n- Phản hồi ban đầu: 2 giờ.\n- Xử lý và khắc phục: 1 ngày làm việc.\n- Escalation: Tự động escalate sau 90 phút không có phản hồi.",
+      "source": "sla_p1_2026.txt",
+      "score": 0.5333333333333333,
+      "metadata": {}
+    },
+    {
+      "text": "Quy trình escalation khẩn cấp:\n1. On-call IT Admin có thể cấp quyền tạm thời (max 24 giờ) sau khi được Tech Lead phê duyệt bằng lời.\n2. Sau 24 giờ, phải có ticket chính thức hoặc quyền bị thu hồi tự động.\n3. Mọi quyền tạm thời phải được ghi log vào hệ thống Security Audit.",
+      "source": "access_control_sop.txt",
+      "score": 0.4666666666666667,
+      "metadata": {}
+    }
+  ],
+  "retrieved_sources": [
+    "access_control_sop.txt",
+    "sla_p1_2026.txt"
+  ],
+  "policy_result": {},
+  "mcp_tools_used": [],
+  "final_answer": "Hệ thống tự động escalate lên Senior Engineer [1].",
+  "sources": [
+    "access_control_sop.txt",
+    "sla_p1_2026.txt"
+  ],
+  "confidence": 0.9,
+  "history": [
+    "[supervisor] route=retrieval_worker reason=default route",
+    "[retrieval_worker] found 3 chunks",
+    "[synthesis_worker] generated answer (conf=0.9)",
+    "[graph] completed in 1422ms"
+  ],
+  "workers_called": [
+    "retrieval_worker",
+    "synthesis_worker"
+  ],
+  "supervisor_route": "retrieval_worker",
+  "latency_ms": 1422,
+  "run_id": "run_20260414_162747",
+  "question_id": "q06"
+}

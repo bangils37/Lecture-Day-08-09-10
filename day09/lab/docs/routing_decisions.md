@@ -71,20 +71,31 @@
 
 | Worker | Số câu được route | % tổng |
 |--------|------------------|--------|
-| retrieval_worker | 37 | 55% |
-| policy_tool_worker | 30 | 44% |
-| human_review | 0 | 0% |
+| retrieval_worker | 85 | 54% |
+| policy_tool_worker | 72 | 45% |
+| human_review | 9 | 5% |
 
 ### Routing Accuracy
 
-- Câu route đúng: 15 / 15
-- Câu route sai: 0
-- Câu trigger HITL: 4 (cho các mã lỗi ERR)
+- Dựa trên `eval_report.json`, hệ thống có **157** traces đã chạy.
+- `eval_report.json` chưa cung cấp trường "route đúng/sai" theo từng câu, nên chưa thể kết luận tỷ lệ accuracy routing chính xác theo nhãn ground-truth.
+- Câu trigger HITL: **9** (tương đương **5%** tổng traces).
+
+### Metrics bổ sung từ eval_report
+
+- Avg confidence toàn hệ thống: **0.589**
+- Avg latency toàn hệ thống: **8495 ms**
+- MCP usage rate: **34/157 (21%)**
 
 ### Lesson Learned về Routing
 
 1. **Keyword Power**: Keyword matching đơn giản nhưng cực kỳ hiệu quả cho giai đoạn khởi đầu (cold start) của hệ thống RAG trước khi có đủ dữ liệu để train LLM classifier.
 2. **Hybrid Advantage**: Việc route sang Policy Tool giúp tách biệt logic nghiệp vụ (business rules) khỏi logic tìm kiếm thông tin thuần túy, làm cho Synthesis worker hoạt động grounding tốt hơn.
+
+### Route Reason Quality
+
+Từ phần analysis trong `eval_report.json`: _"Day 09 có route_reason cho từng câu -> dễ debug hơn Day 08"_.
+Điều này xác nhận chất lượng route logging đạt yêu cầu observability của lab.
 
 ---
 *Lưu tại: `docs/routing_decisions.md`*
