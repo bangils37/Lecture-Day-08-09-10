@@ -84,47 +84,76 @@ def supervisor_node(state: AgentState) -> AgentState:
     2. Có cần MCP tool không
     3. Có risk cao cần HITL không
 
-    TODO Sprint 1: Implement routing logic dựa vào task keywords.
+    Routing logic:
+    - Policy/Access keywords → policy_tool_worker
+    - SLA/P1/Escalation keywords → retrieval_worker
+    - Unknown error + risk_high → human_review
+    - Mặc định → retrieval_worker
     """
     task = state["task"].lower()
     state["history"].append(f"[supervisor] received task: {state['task'][:80]}")
 
-    # --- TODO: Implement routing logic ---
-    # Gợi ý:
-    # - "hoàn tiền", "refund", "flash sale", "license" → policy_tool_worker
-    # - "cấp quyền", "access level", "level 3", "emergency" → policy_tool_worker
-    # - "P1", "escalation", "sla", "ticket" → retrieval_worker
-    # - mã lỗi không rõ (ERR-XXX), không đủ context → human_review
-    # - còn lại → retrieval_worker
-
-    route = "retrieval_worker"         # TODO: thay bằng logic thực
-    route_reason = "default route"    # TODO: thay bằng lý do thực
+    # Initialize routing variables
+    route = "retrieval_worker"
+    route_reason = ""
     needs_tool = False
     risk_high = False
 
-    # Ví dụ routing cơ bản — nhóm phát triển thêm:
-    policy_keywords = ["hoàn tiền", "refund", "flash sale", "license", "cấp quyền", "access", "level 3"]
-    risk_keywords = ["emergency", "khẩn cấp", "2am", "không rõ", "err-"]
+    # ─── Policy/Access keywords → policy_tool_worker ───
+    policy_keywords = [
+        "hoàn tiền", "refund", 
+        "flash sale", "license", 
+        "cấp quyền", "access", "level 3",
+        "digital product", "digital", "sản phẩm số",
+    ]
+    
+    # ─── SLA/Retrieval keywords → retrieval_worker ───
+    retrieval_keywords = [
+        "p1", "sla", "ticket", "escalation", "phản hồi", 
+        "response", "deadline", "khẩn cấp", "remote", "hr", "helpdesk"
+    ]
+    
+    # ─── Risk keywords → trigger risk_high ───
+    risk_keywords = [
+        "emergency", "khẩn cấp", "2am", "không rõ", "err-", 
+        "unknown", "contractor", "access", "level 2"
+    ]
 
+    # Step 1: Check for policy/access keywords first (higher priority)
     if any(kw in task for kw in policy_keywords):
         route = "policy_tool_worker"
-        route_reason = f"task contains policy/access keyword"
+        route_reason = "detected policy/access/refund keyword(s)"
         needs_tool = True
-
+    
+    # Step 2: Check for retrieval/SLA keywords
+    elif any(kw in task for kw in retrieval_keywords):
+        route = "retrieval_worker"
+        matched_kws = [kw for kw in retrieval_keywords if kw in task]
+        route_reason = f"detected SLA/retrieval keyword(s): {matched_kws[0]}"
+    
+    # Step 3: Check risk flags
     if any(kw in task for kw in risk_keywords):
         risk_high = True
-        route_reason += " | risk_high flagged"
+        if route_reason:
+            route_reason += " | risk_high=True"
+        else:
+            route_reason = "risk keyword detected → risk_high=True"
 
-    # Human review override
-    if risk_high and "err-" in task:
+    # Step 4: Human review override for unknown errors + high risk
+    if risk_high and "err-" in task and "refund" not in task:
         route = "human_review"
-        route_reason = "unknown error code + risk_high → human review"
+        route_reason = "unknown error code (ERR-*) + risk_high → escalate to human_review"
 
+    # Fallback
+    if not route_reason:
+        route_reason = "default routing to retrieval_worker"
+
+    # Write to state
     state["supervisor_route"] = route
     state["route_reason"] = route_reason
     state["needs_tool"] = needs_tool
     state["risk_high"] = risk_high
-    state["history"].append(f"[supervisor] route={route} reason={route_reason}")
+    state["history"].append(f"[supervisor] route={route} | reason={route_reason}")
 
     return state
 
