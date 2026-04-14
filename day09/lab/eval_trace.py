@@ -30,7 +30,7 @@ from graph import run_graph, save_trace
 # 1. Run Pipeline on Test Questions
 # ─────────────────────────────────────────────
 
-def run_test_questions(questions_file: str = "data/test_questions.json") -> list:
+def run_test_questions(questions_file: str = "data/grading_questions.json") -> list:
     """
     Chạy pipeline với danh sách câu hỏi, lưu trace từng câu.
 
