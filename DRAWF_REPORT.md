@@ -13,9 +13,9 @@ Dùng để các thành viên trong nhóm  trò chuyện, thống nhất và not
 ## Phân vai
 
 | Vai | Trách nhiệm | Sprint chính | Phân công |
-|-----|-------------|----------------|
+|-----|-------------|----------------|-----------|
 | **Ingestion Owner** | raw paths, logging, manifest | 1 | Bùi Trọng Anh
-| **Cleaning / Quality Owner** | `cleaning_rules.py`, `expectations.py`, quarantine | 1–3 | Nguyễn Bằng Anh
-| **Embed Owner** | Chroma collection, idempotency, eval | 2–3 | Đỗ Thị Thùy Trang
+| **Cleaning / Quality Owner** | `cleaning_rules.py`, `expectations.py`, quarantine | 1–3 | Đỗ Thị Thùy Trang
+| **Embed Owner** | Chroma collection, idempotency, eval | 2–3 | Nguyễn Bằng Anh
 | **Monitoring / Docs Owner** | freshness, runbook, 3 docs, group report | 4 | Bùi Trọng Anh
 
