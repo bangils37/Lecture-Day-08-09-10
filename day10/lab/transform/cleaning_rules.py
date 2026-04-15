@@ -25,6 +25,8 @@ ALLOWED_DOC_IDS = frozenset(
 
 _ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _DMY_SLASH = re.compile(r"^(\d{2})/(\d{2})/(\d{4})$")
+_ISO_DATETIME = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}")
+_SUSPICIOUS_KEYWORDS = frozenset({"[deprecated]", "[todo]", "[fixme]", "[redacted]"})
 
 
 def _norm_text(s: str) -> str:
@@ -51,6 +53,44 @@ def _normalize_effective_date(raw: str) -> Tuple[str, str]:
         dd, mm, yyyy = m.group(1), m.group(2), m.group(3)
         return f"{yyyy}-{mm}-{dd}", ""
     return "", "invalid_effective_date_format"
+
+
+def _is_valid_exported_at(raw: str) -> bool:
+    """
+    RULE 1 (NEW): Validate exported_at format — must be ISO 8601 datetime.
+    Quarantine if format looks wrong (anti-garbage ingestion).
+    """
+    s = (raw or "").strip()
+    if not s:
+        return False  # Empty exported_at không hợp lệ
+    return bool(_ISO_DATETIME.match(s))
+
+
+def _has_suspicious_keywords(text: str) -> bool:
+    """
+    RULE 2 (NEW): Check for suspicious markers like [deprecated], [todo], etc.
+    These typically indicate unfinished or obsolete content.
+    Quarantine if found (data quality).
+    """
+    lower = (text or "").lower()
+    for keyword in _SUSPICIOUS_KEYWORDS:
+        if keyword in lower:
+            return True
+    return False
+
+
+def _normalize_chunk_text(text: str) -> str:
+    """
+    RULE 3 (NEW): Trim và normalize whitespace trong chunk_text.
+    - Xóa leading/trailing spaces
+    - Collapse multiple spaces thành 1
+    - Fix line breaks thành space
+    Tránh collision từ string whitespace khác biệt.
+    """
+    s = (text or "").strip()
+    # Collapse multiple spaces/newlines thành 1 space
+    s = " ".join(s.split())
+    return s
 
 
 def load_raw_csv(path: Path) -> List[Dict[str, str]]:
@@ -114,6 +154,19 @@ def clean_rows(
         if not text:
             quarantine.append({**raw, "reason": "missing_chunk_text"})
             continue
+
+        # RULE 1 (NEW): Validate exported_at format — must be ISO 8601 datetime
+        if not _is_valid_exported_at(exported_at):
+            quarantine.append({**raw, "reason": "invalid_exported_at_format"})
+            continue
+
+        # RULE 2 (NEW): Check for suspicious keywords like [deprecated], [todo], etc.
+        if _has_suspicious_keywords(text):
+            quarantine.append({**raw, "reason": "has_suspicious_keywords"})
+            continue
+
+        # RULE 3 (NEW): Normalize whitespace in chunk_text (collapse spaces, fix line breaks)
+        text = _normalize_chunk_text(text)
 
         key = _norm_text(text)
         if key in seen_text:

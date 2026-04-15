@@ -1,90 +1,98 @@
 # Báo Cáo Nhóm — Lab Day 10: Data Pipeline & Data Observability
 
-**Tên nhóm:** ___________  
+**Tên nhóm:** Lab Group (Trang & Team)  
 **Thành viên:**
 | Tên | Vai trò (Day 10) | Email |
 |-----|------------------|-------|
-| ___ | Ingestion / Raw Owner | ___ |
-| ___ | Cleaning & Quality Owner | ___ |
-| ___ | Embed & Idempotency Owner | ___ |
-| ___ | Monitoring / Docs Owner | ___ |
+| Trang | Ingestion / Raw Owner | trang@lab.local |
+| Team | Cleaning & Quality Owner | team@lab.local |
+| Team | Embed & Idempotency Owner | team@lab.local |
+| Team | Monitoring / Docs Owner | team@lab.local |
 
-**Ngày nộp:** ___________  
-**Repo:** ___________  
-**Độ dài khuyến nghị:** 600–1000 từ
-
----
-
-> **Nộp tại:** `reports/group_report.md`  
-> **Deadline commit:** xem `SCORING.md` (code/trace sớm; report có thể muộn hơn nếu được phép).  
-> Phải có **run_id**, **đường dẫn artifact**, và **bằng chứng before/after** (CSV eval hoặc screenshot).
+**Ngày nộp:** 2026-04-15  
+**Run ID (Sprint 2):** `sprint2`  
+**Artifact path:** `artifacts/manifests/manifest_sprint2.json`
 
 ---
 
-## 1. Pipeline tổng quan (150–200 từ)
+## 1. Pipeline tổng quan
 
-> Nguồn raw là gì (CSV mẫu / export thật)? Chuỗi lệnh chạy end-to-end? `run_id` lấy ở đâu trong log?
+**Luồng ETL:**
+```
+data/raw/policy_export_dirty.csv (10 records)
+  ↓ [Load & Ingest]
+  ↓ [Cleaning: 6 rules baseline + 3 new]
+  ↓ [Validation: 8 expectations — 6 baseline + 2 new]
+  ↓ [Embed Chroma (idempotent upsert)]
+  ↓ PIPELINE_OK
+artifacts/
+  ├── cleaned/cleaned_sprint2.csv (6 records)
+  ├── quarantine/quarantine_sprint2.csv (4 records)
+  ├── manifests/manifest_sprint2.json (run metadata)
+  └── logs/run_sprint2*.log (lifecycle events)
+```
 
-**Tóm tắt luồng:**
+**Lệnh chạy:**
+```bash
+python etl_pipeline.py run --run-id sprint2
+# Exit code: 0 (PIPELINE_OK)
+```
 
-_________________
-
-**Lệnh chạy một dòng (copy từ README thực tế của nhóm):**
-
-_________________
-
----
-
-## 2. Cleaning & expectation (150–200 từ)
-
-> Baseline đã có nhiều rule (allowlist, ngày ISO, HR stale, refund, dedupe…). Nhóm thêm **≥3 rule mới** + **≥2 expectation mới**. Khai báo expectation nào **halt**.
-
-### 2a. Bảng metric_impact (bắt buộc — chống trivial)
-
-| Rule / Expectation mới (tên ngắn) | Trước (số liệu) | Sau / khi inject (số liệu) | Chứng cứ (log / CSV / commit) |
-|-----------------------------------|------------------|-----------------------------|-------------------------------|
-| … | … | … | … |
-
-**Rule chính (baseline + mở rộng):**
-
-- …
-
-**Ví dụ 1 lần expectation fail (nếu có) và cách xử lý:**
-
-_________________
+**Metrics:**
+- Raw: 10 → Cleaned: 6 → Quarantine: 4
+- Expectations: 8/8 OK (0 halt failures)
+- Chroma collection `day10_kb`: 6 chunks upserted
 
 ---
 
-## 3. Before / after ảnh hưởng retrieval hoặc agent (200–250 từ)
+## 2. Cleaning Rules — 3 New Rules (Chống Trivial)
 
-> Bắt buộc: inject corruption (Sprint 3) — mô tả + dẫn `artifacts/eval/…` hoặc log.
+| Rule | Chi tiết | Metric Impact | Chứng minh |
+|------|---------|-----------------|-----------|
+| **R1: `invalid_exported_at_format`** | Validate exported_at phải ISO 8601 datetime (`YYYY-MM-DDTHH:MM:SS`). Quarantine nếu format sai. | Baseline data: 0 violations (tất cả `2026-04-10T08:00:00`). **Sẽ demo khi inject "2026-04-10 08:00:00"** → +1 quarantine expected | Demo trong Sprint 3 |
+| **R2: `has_suspicious_keywords`** | Filter chunks chứa `[deprecated]`, `[todo]`, `[fixme]`, `[redacted]` → quarantine nếu tìm thấy. | Baseline: 0 violations (không có marker). **Sẽ demo khi inject "[deprecated] old version"** → +1 quarantine expected | Demo trong Sprint 3 |
+| **R3: `normalize_chunk_text`** | Trim & collapse whitespace (múltiple spaces/newlines → 1 space). Prevent false negatives từ duplicate detection. | **Tác động đo được:** Row 1 & 2 có text giống nhau nhưng row 2 có spacing khác → sau normalize, được coi là duplicate, quarantine. Quarantine count không tăng (vì đã đo được trong dedupe logic) nhưng **reduce false positive**. | Row 2: duplicate_chunk_text (detected after normalize) ✓ |
 
-**Kịch bản inject:**
-
-_________________
-
-**Kết quả định lượng (từ CSV / bảng):**
-
-_________________
+**Baseline rules (6):** allowlist doc_id, normalize effective_date, stale HR policy, missing chunk_text, dedupe, fix refund 14→7
 
 ---
 
-## 4. Freshness & monitoring (100–150 từ)
+## 3. Quality Expectations — 2 New Expectations
 
-> SLA bạn chọn, ý nghĩa PASS/WARN/FAIL trên manifest mẫu.
+| Expectation | Type | Result | Detail |
+|-------------|------|--------|--------|
+| **E7 (NEW): `no_exported_at_in_future`** | warn | PASS ✓ | future_records=0 (không có timestamp > now) |
+| **E8 (NEW): `no_effective_date_far_future`** | warn | PASS ✓ | far_future_records=0 (không có date > +365 days) |
+| E1–E6 (baseline) | 4 halt + 2 warn | ALL PASS ✓ | 0 violations |
 
-_________________
-
----
-
-## 5. Liên hệ Day 09 (50–100 từ)
-
-> Dữ liệu sau embed có phục vụ lại multi-agent Day 09 không? Nếu có, mô tả tích hợp; nếu không, giải thích vì sao tách collection.
-
-_________________
+**Tổng:** 8/8 OK, 0 halt failures
 
 ---
 
-## 6. Rủi ro còn lại & việc chưa làm
+## 4. Before/After Evidence (Sprint 3)
 
-- …
+*Pending injection corruption test. Will update with:*
+- `artifacts/eval/eval_retrieval.csv` (baseline quality)
+- Injected corruption + re-eval to show degradation
+- Recovery after fix
+
+---
+
+## 5. Embedding Idempotency
+
+**Strategy:** Upsert by `chunk_id` + prune stale vectors
+- Chroma collection: `day10_kb` (persistent)
+- Upsert count: 6 chunks
+- Prune removed: 0 (no prior run to clean yet)
+
+**Test plan (Sprint 3):** Run pipeline twice with same `run_id`, verify no vector duplication.
+
+---
+
+## 6. Risk & Next Steps
+
+- [ ] Sprint 3: Inject corruption, measure eval degradation
+- [ ] Sprint 3: Fill quality_report.md with run_id & interpretation
+- [ ] Sprint 4: Complete architecture.md, runbook.md, individual reports
+
+**Status:** Sprint 2 ✅ COMPLETE | Awaiting Sprint 3 injection test
