@@ -3,7 +3,7 @@
 
 version: "1.0"
 dataset: "kb_chunk_export"
-owner_team: "__TODO__"
+owner_team: "Team AI Thuc Chien - Group Day 10"
 
 schema_cleaned:
   chunk_id:
@@ -32,21 +32,31 @@ quality_rules:
   - id: "no_stale_refund_window"
     description: "Không được để chunk policy refund chứa cửa sổ 14 ngày (lệch so với v4 = 7 ngày)"
     severity: "halt"
+  - id: "no_pii_email"
+    description: "Không được để email không được mask trong chunk_text"
+    severity: "halt"
+  - id: "it_standard_terms"
+    description: "Chuẩn hóa thuật ngữ IT (Wi-Fi, Portal)"
+    severity: "warn"
 
 freshness:
   measured_at: "publish"  # ingest | cleaned | publish
   sla_hours: 24
-  alert_channel: "__TODO__"
+  alert_channel: "Slack #data-ops-day10"
 
 canonical_sources:
   - path: "data/docs/policy_refund_v4.txt"
     doc_id: "policy_refund_v4"
+    owner: "Nguyễn Bằng Anh"
   - path: "data/docs/sla_p1_2026.txt"
     doc_id: "sla_p1_2026"
+    owner: "Bùi Trọng Anh"
   - path: "data/docs/it_helpdesk_faq.txt"
     doc_id: "it_helpdesk_faq"
+    owner: "Đỗ Thị Thùy Trang"
   - path: "data/docs/hr_leave_policy.txt"
     doc_id: "hr_leave_policy"
+    owner: "Nguyễn Bằng Anh"
 
 # Baseline allowlist export — nhóm mở rộng doc mới phải đồng bộ cleaning_rules + contract.
 allowed_doc_ids:

@@ -112,5 +112,38 @@ def run_expectations(cleaned_rows: List[Dict[str, Any]]) -> Tuple[List[Expectati
         )
     )
 
+    # E7 (Nguyễn Bằng Anh): No unmasked email addresses
+    email_pattern = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
+    bad_emails = [
+        r
+        for r in cleaned_rows
+        if email_pattern.search(r.get("chunk_text") or "")
+    ]
+    ok7 = len(bad_emails) == 0
+    results.append(
+        ExpectationResult(
+            "no_pii_email",
+            ok7,
+            "halt",
+            f"violations={len(bad_emails)}",
+        )
+    )
+
+    # E8 (Nguyễn Bằng Anh): Standardized terminology
+    bad_terms = [
+        r
+        for r in cleaned_rows
+        if "wifi" in (r.get("chunk_text") or "").lower()
+    ]
+    ok8 = len(bad_terms) == 0
+    results.append(
+        ExpectationResult(
+            "it_standard_terms",
+            ok8,
+            "warn",
+            f"non_standard_chunks={len(bad_terms)}",
+        )
+    )
+
     halt = any(not r.passed and r.severity == "halt" for r in results)
     return results, halt

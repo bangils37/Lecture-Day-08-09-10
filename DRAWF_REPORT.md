@@ -12,9 +12,10 @@ Dùng để các thành viên trong nhóm  trò chuyện, thống nhất và not
 
 ## Phân vai
 
-| Vai trò | Trách nhiệm chính | Sprint lead | Phân công |
-|---------|------------------|------------|-----------|
-| **Supervisor Owner** | graph.py, routing logic, state management | 1 | Bùi Trọng Anh |
-| **Worker Owner** | retrieval.py, policy_tool.py, synthesis.py, contracts | 2 | Nguyễn Bằng Anh |
-| **MCP Owner** | mcp_server.py, MCP integration trong policy_tool | 3 | Đỗ Thị Thùy Trang |
-| **Trace & Docs Owner** | eval_trace.py, 3 doc templates, group_report | 4 | Bùi Trọng Anh |
+| Vai | Trách nhiệm | Sprint chính | Phân công |
+|-----|-------------|----------------|
+| **Ingestion Owner** | raw paths, logging, manifest | 1 | Bùi Trọng Anh
+| **Cleaning / Quality Owner** | `cleaning_rules.py`, `expectations.py`, quarantine | 1–3 | Nguyễn Bằng Anh
+| **Embed Owner** | Chroma collection, idempotency, eval | 2–3 | Đỗ Thị Thùy Trang
+| **Monitoring / Docs Owner** | freshness, runbook, 3 docs, group report | 4 | Bùi Trọng Anh
+

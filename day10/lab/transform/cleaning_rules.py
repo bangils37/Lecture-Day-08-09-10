@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import os
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
@@ -77,11 +78,20 @@ def clean_rows(
     4) Quarantine: chunk_text rỗng hoặc effective_date rỗng sau chuẩn hoá.
     5) Loại trùng nội dung chunk_text (giữ bản đầu).
     6) Fix stale refund: policy_refund_v4 chứa '14 ngày làm việc' → 7 ngày.
+    7) Rule mới (Nguyễn Bằng Anh): Chuẩn hóa thuật ngữ IT (wifi -> Wi-Fi, portal -> Portal).
+    8) Rule mới (Nguyễn Bằng Anh): Masking PII (Email) trong chunk_text.
+    9) Rule mới (Nguyễn Bằng Anh): Đảm bảo chunk_text kết thúc bằng dấu chấm (nếu chưa có).
     """
     quarantine: List[Dict[str, Any]] = []
     seen_text: set[str] = set()
     cleaned: List[Dict[str, Any]] = []
     seq = 0
+
+    # Pattern cho PII Email
+    _EMAIL_PATTERN = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
+
+    # Merit/Distinction: Read HR policy cutoff from env instead of hard-coding
+    hr_cutoff = os.environ.get("HR_LEAVE_POLICY_CUTOFF", "2026-01-01")
 
     for raw in rows:
         doc_id = raw.get("doc_id", "")
@@ -101,12 +111,13 @@ def clean_rows(
             quarantine.append({**raw, "reason": eff_err, "effective_date_raw": eff_raw})
             continue
 
-        if doc_id == "hr_leave_policy" and eff_norm < "2026-01-01":
+        if doc_id == "hr_leave_policy" and eff_norm < hr_cutoff:
             quarantine.append(
                 {
                     **raw,
                     "reason": "stale_hr_policy_effective_date",
                     "effective_date_normalized": eff_norm,
+                    "cutoff_used": hr_cutoff,
                 }
             )
             continue
@@ -129,6 +140,22 @@ def clean_rows(
                     "7 ngày làm việc",
                 )
                 fixed_text += " [cleaned: stale_refund_window]"
+
+        # Rule 7: Standardize IT terms
+        if doc_id == "it_helpdesk_faq":
+            if "wifi" in fixed_text.lower():
+                fixed_text = re.sub(r"wifi", "Wi-Fi", fixed_text, flags=re.IGNORECASE)
+            if "portal" in fixed_text.lower():
+                fixed_text = re.sub(r"portal", "Portal", fixed_text, flags=re.IGNORECASE)
+
+        # Rule 8: Mask PII (Email)
+        if _EMAIL_PATTERN.search(fixed_text):
+            fixed_text = _EMAIL_PATTERN.sub("[EMAIL]", fixed_text)
+
+        # Rule 9: Ensure ending period
+        fixed_text = fixed_text.strip()
+        if fixed_text and fixed_text[-1] not in (".", "!", "?"):
+            fixed_text += "."
 
         seq += 1
         cleaned.append(
