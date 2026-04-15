@@ -216,4 +216,3 @@ Freshness / version → Volume & errors → Schema & contract → Lineage / run_
 - Slide: [`../lecture-10.html`](../lecture-10.html)
 - Lab Day 09 (orchestration): [`../../day09/lab/README.md`](../../day09/lab/README.md)
 - Great Expectations (tuỳ chọn nâng cao): https://docs.greatexpectations.io/
-- ChromaDB: https://docs.trychroma.com/

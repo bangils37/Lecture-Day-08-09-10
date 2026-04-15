@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Tuple
 
 
@@ -113,50 +112,36 @@ def run_expectations(cleaned_rows: List[Dict[str, Any]]) -> Tuple[List[Expectati
         )
     )
 
-    # E7 (NEW): exported_at không được nằm trong tương lai
-    now_utc = datetime.now(timezone.utc)
-    future_exported = []
-    for r in cleaned_rows:
-        exp_str = (r.get("exported_at") or "").strip()
-        if exp_str:
-            try:
-                exp_dt = datetime.fromisoformat(exp_str.replace("Z", "+00:00"))
-                # Normalize to UTC if naive
-                if exp_dt.tzinfo is None:
-                    exp_dt = exp_dt.replace(tzinfo=timezone.utc)
-                if exp_dt > now_utc:
-                    future_exported.append(r)
-            except (ValueError, AttributeError):
-                pass  # Skip nếu parse lỗi
-    ok7 = len(future_exported) == 0
+    # E7 (Nguyễn Bằng Anh): No unmasked email addresses
+    email_pattern = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
+    bad_emails = [
+        r
+        for r in cleaned_rows
+        if email_pattern.search(r.get("chunk_text") or "")
+    ]
+    ok7 = len(bad_emails) == 0
     results.append(
         ExpectationResult(
-            "no_exported_at_in_future",
+            "no_pii_email",
             ok7,
-            "warn",
-            f"future_records={len(future_exported)}",
+            "halt",
+            f"violations={len(bad_emails)}",
         )
     )
 
-    # E8 (NEW): effective_date không được quá xa trong tương lai (> 365 ngày)
-    max_future_date = (now_utc + timedelta(days=365)).date()
-    far_future_eff = []
-    for r in cleaned_rows:
-        eff_str = (r.get("effective_date") or "").strip()
-        if eff_str and len(eff_str) == 10:  # YYYY-MM-DD format
-            try:
-                eff_date = datetime.fromisoformat(eff_str).date()
-                if eff_date > max_future_date:
-                    far_future_eff.append(r)
-            except (ValueError, AttributeError):
-                pass
-    ok8 = len(far_future_eff) == 0
+    # E8 (Nguyễn Bằng Anh): Standardized terminology
+    bad_terms = [
+        r
+        for r in cleaned_rows
+        if "wifi" in (r.get("chunk_text") or "").lower()
+    ]
+    ok8 = len(bad_terms) == 0
     results.append(
         ExpectationResult(
-            "no_effective_date_far_future",
+            "it_standard_terms",
             ok8,
             "warn",
-            f"far_future_records={len(far_future_eff)}",
+            f"non_standard_chunks={len(bad_terms)}",
         )
     )
 
