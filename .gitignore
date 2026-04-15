@@ -51,6 +51,7 @@ venv.bak/
 day08/lab/chroma_db/
 day09/lab/chroma_db/
 day10/lab/chroma_db/
+day09/lab/artifacts/traces/
 *.sqlite
 *.db
 reports/individual/*.md
