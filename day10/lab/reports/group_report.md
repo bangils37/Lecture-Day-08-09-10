@@ -4,13 +4,12 @@
 **Thành viên:**
 | Tên | Vai trò (Day 10) | Email |
 |-----|------------------|-------|
-| Bùi Trọng Anh | Ingestion / Monitoring / Docs | bui_trong_anh@example.com |
-| Nguyễn Bằng Anh | Cleaning & Quality Owner | nguyen_bang_anh@example.com |
-| Đỗ Thị Thùy Trang | Embed & Idempotency Owner | do_thi_thuy_trang@example.com |
+| Bùi Trọng Anh | Ingestion / Monitoring / Docs | 26ai.anhbt@vinuni.edu.vn |
+| Đỗ Thị Thùy Trang | Cleaning & Quality Owner | 26ai.trangdtt@vinuni.edu.vn |
+| Nguyễn Bằng Anh| Embed & Idempotency Owner | 26ai.anhnb@vinuni.edu.vn |
 
 **Ngày nộp:** 2026-04-15  
-**Repo:** d:\VinUni_AIThucChien\Lecture-Day-08-09-10\day10\lab  
-**Độ dài khuyến nghị:** 600–1000 từ
+**Repo:** https://github.com/bangils37/Lecture-Day-08-09-10.git
 
 ---
 
