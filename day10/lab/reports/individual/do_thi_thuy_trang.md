@@ -1,7 +1,7 @@
 # Báo Cáo Cá Nhân — Lab Day 10
 
 **Họ và tên:** Đỗ Thị Thùy Trang  
-**MSSV:** AICB-P1-003 (Giả định)  
+**MSSV:** 2A202600041 
 **Vai trò:** Embed Owner  
 **Ngày:** 2026-04-15  
 

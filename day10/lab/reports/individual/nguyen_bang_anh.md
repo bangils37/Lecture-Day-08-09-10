@@ -1,7 +1,7 @@
 # Báo Cáo Cá Nhân — Lab Day 10
 
 **Họ và tên:** Nguyễn Bằng Anh  
-**MSSV:** AICB-P1-001 (Giả định)  
+**MSSV:** 2A202600136
 **Vai trò:** Cleaning & Quality Owner  
 **Ngày:** 2026-04-15  
 

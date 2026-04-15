@@ -1,7 +1,7 @@
 # Báo Cáo Cá Nhân — Lab Day 10
 
 **Họ và tên:** Bùi Trọng Anh  
-**MSSV:** AICB-P1-002 (Giả định)  
+**MSSV:** 2A202600010  
 **Vai trò:** Ingestion / Monitoring / Docs Owner  
 **Ngày:** 2026-04-15  
 
